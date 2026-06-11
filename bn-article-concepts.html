@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Article page concepts — Index / Smalt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F6F2; --paper-2:#EEEDE7; --ink:#14151A; --soft:#5B5C63;
+    --line:#D9D7CF; --smalt:#1A46F0; --smalt-deep:#1438C2; --smalt-line:#3D62F4; --smalt-wash:#E5E9FF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+  .mono{font-family:"IBM Plex Mono",monospace}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+  figure{margin:0}
+  figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--soft);margin-top:9px;letter-spacing:.01em}
+
+  /* switcher */
+  .switch{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+    background:rgba(247,246,242,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 18px}
+  .switch .brand{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--soft);margin-right:8px}
+  .switch .grp{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin:0 4px 0 10px}
+  .switch button{font-family:"IBM Plex Mono",monospace;font-size:12px;background:none;border:1px solid transparent;border-radius:999px;padding:6px 12px;cursor:pointer;color:var(--soft);transition:.15s}
+  .switch button:hover{color:var(--ink)}
+  .switch button.on{background:var(--smalt);color:#fff}
+
+  .note{padding:16px 28px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--soft);max-width:none}
+  .note b{color:var(--ink)}
+
+  .panel{display:none}
+  .panel.on{display:block}
+
+  /* shared editorial primitives */
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--smalt)}
+  .lede{font-size:clamp(18px,1.9vw,23px);line-height:1.55;color:#2b2c33}
+  .bodycopy p{font-size:17.5px;line-height:1.72;color:#26272E;margin-bottom:18px}
+  .bodycopy h3{font-size:13px;font-family:"IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--smalt);margin:38px 0 14px}
+  .pull{font-size:clamp(24px,2.8vw,34px);font-weight:600;letter-spacing:-.02em;line-height:1.2;color:var(--ink);margin:14px 0}
+
+  /* ============ CONCEPT A — DOSSIER (sticky index rail) ============ */
+  #cA .wrap{display:grid;grid-template-columns:240px 1fr;gap:0;max-width:1180px;margin:0 auto}
+  #cA .rail{position:sticky;top:44px;align-self:start;height:calc(100vh - 44px);padding:54px 24px 30px;border-right:1px solid var(--line);display:flex;flex-direction:column}
+  #cA .rail .who{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft);letter-spacing:.04em}
+  #cA .rail .idx{margin-top:auto;display:flex;flex-direction:column;gap:2px}
+  #cA .rail .idx a{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--soft);padding:5px 0;cursor:pointer;display:flex;gap:10px;transition:.14s}
+  #cA .rail .idx a .nn{color:var(--smalt)}
+  #cA .rail .idx a:hover,#cA .rail .idx a.act{color:var(--ink)}
+  #cA .main{padding:54px 0 70px}
+  #cA .col{max-width:680px;padding:0 40px}
+  #cA h1{font-size:clamp(40px,5.4vw,72px);font-weight:600;letter-spacing:-.035em;line-height:1;margin:14px 0 0}
+  #cA .stand{max-width:620px;margin:22px 0 0}
+  #cA .band{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:40px 0}
+  #cA .band .mx{flex:1;min-width:140px;padding:18px 22px 18px 0;border-right:1px solid var(--line)}
+  #cA .band .mx:last-child{border-right:none}
+  #cA .band .val{font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing:-.02em;color:var(--smalt)}
+  #cA .band .lab{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--soft);margin-top:2px}
+  #cA figure.bleed{margin:40px 0;padding:0 40px}
+  #cA figure.bleed .fr{aspect-ratio:16/8;overflow:hidden;background:linear-gradient(135deg,var(--smalt),var(--smalt-deep))}
+  #cA .sec{scroll-margin-top:60px}
+
+  /* ============ CONCEPT B — SPECIMEN (numbered, typographic) ============ */
+  #cB .cover{max-width:1180px;margin:0 auto;padding:64px 40px 30px}
+  #cB .meta-top{display:flex;gap:30px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--soft)}
+  #cB .meta-top b{color:var(--ink);font-weight:500;display:block;margin-top:3px;font-family:"IBM Plex Sans",sans-serif;font-size:14px}
+  #cB h1{font-size:clamp(48px,8vw,118px);font-weight:600;letter-spacing:-.04em;line-height:.92;margin:30px 0 0}
+  #cB .stand{font-size:clamp(19px,2.1vw,26px);max-width:30ch;margin:26px 0 0;color:#2b2c33;line-height:1.4}
+  #cB .imgband{max-width:1180px;margin:36px auto 0;padding:0 40px}
+  #cB .imgband .fr{aspect-ratio:21/9;overflow:hidden;background:linear-gradient(135deg,var(--paper-2),#dcdad2)}
+  #cB .metrics2{max-width:1180px;margin:0 auto;padding:34px 40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  #cB .metrics2 .mx{background:var(--paper);padding:22px}
+  #cB .metrics2 .val{font-size:clamp(28px,3.4vw,46px);font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+  #cB .metrics2 .lab{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--soft);margin-top:4px}
+  #cB .sections{max-width:1180px;margin:0 auto;padding:20px 40px 70px}
+  #cB .row{display:grid;grid-template-columns:120px 1fr;gap:30px;padding:42px 0;border-bottom:1px solid var(--line)}
+  #cB .row .nn{font-size:clamp(34px,5vw,64px);font-weight:600;color:var(--smalt);letter-spacing:-.03em;line-height:.9}
+  #cB .row .nn .lbl{display:block;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin-top:10px}
+  #cB .row .rc{max-width:680px}
+  #cB .row .rc h2{font-size:24px;font-weight:600;letter-spacing:-.015em;margin-bottom:14px}
+
+  /* ============ CONCEPT C — CINEMATIC SMALT ============ */
+  #cC .hero{position:relative;min-height:82vh;display:flex;align-items:flex-end;overflow:hidden;background:var(--smalt-deep)}
+  #cC .hero .bg{position:absolute;inset:0}
+  #cC .hero .bg img{opacity:.34;filter:saturate(.4)}
+  #cC .hero .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(120% 100% at 30% 20%,var(--smalt) 0%,rgba(20,40,160,.7) 60%,rgba(8,16,60,.85) 100%);mix-blend-mode:multiply}
+  #cC .hero .inner{position:relative;z-index:2;color:#fff;padding:0 40px 54px;max-width:1180px;margin:0 auto;width:100%}
+  #cC .hero h1{font-size:clamp(48px,8vw,110px);font-weight:600;letter-spacing:-.04em;line-height:.94;max-width:14ch}
+  #cC .hero .stand{margin-top:22px;max-width:60ch;font-size:clamp(17px,1.8vw,22px);color:rgba(255,255,255,.9);line-height:1.5}
+  #cC .hero .hmeta{margin-top:30px;display:flex;gap:34px;flex-wrap:wrap;border-top:1px solid var(--smalt-line);padding-top:20px}
+  #cC .hero .hmeta .mx .val{font-size:clamp(22px,2.6vw,34px);font-weight:700;letter-spacing:-.02em}
+  #cC .hero .hmeta .mx .lab{font-family:"IBM Plex Mono",monospace;font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+  #cC .body{max-width:760px;margin:0 auto;padding:64px 40px 30px}
+  #cC figure.full{margin:30px 0;width:100%}
+  #cC figure.full .fr{aspect-ratio:16/9;overflow:hidden;background:linear-gradient(135deg,var(--smalt),var(--smalt-deep));border-radius:4px}
+  #cC .wide{max-width:1180px;margin:40px auto;padding:0 40px}
+  #cC .wide .fr{aspect-ratio:21/9;overflow:hidden;border-radius:4px;background:var(--paper-2)}
+  #cC .pull{color:var(--smalt);max-width:18ch;margin:38px auto;text-align:left;padding:0 40px;max-width:760px}
+
+  /* ============ CONCEPT D — PROJECT (visual-forward) ============ */
+  #cD .top{max-width:1180px;margin:0 auto;padding:56px 40px 24px;display:grid;grid-template-columns:1fr 320px;gap:40px;align-items:end;border-bottom:1px solid var(--line)}
+  #cD h1{font-size:clamp(40px,6vw,84px);font-weight:600;letter-spacing:-.035em;line-height:.96}
+  #cD .kind{margin-bottom:14px}
+  #cD .side .stand{font-size:16px;color:#2b2c33;line-height:1.55}
+  #cD .side .facts{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+  #cD .side .facts .f{display:flex;justify-content:space-between;gap:12px;font-family:"IBM Plex Mono",monospace;font-size:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+  #cD .side .facts .f .k{color:var(--soft)}
+  #cD .lead-img{max-width:1180px;margin:26px auto;padding:0 40px}
+  #cD .lead-img .fr{aspect-ratio:16/8;overflow:hidden;background:var(--paper-2)}
+  #cD .gal{max-width:1180px;margin:0 auto;padding:14px 40px 30px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  #cD .gal .g{aspect-ratio:4/3;overflow:hidden;background:var(--paper-2)}
+  #cD .gal .g.tall{grid-row:span 2;aspect-ratio:auto}
+  #cD .blurb{max-width:680px;margin:10px auto 70px;padding:0 40px}
+  #cD .blurb p{font-size:17px;line-height:1.7;color:#26272E;margin-bottom:16px}
+
+  /* ============ CONCEPT E — MUSING (essay, serif) ============ */
+  #cE .ehead{max-width:760px;margin:0 auto;padding:70px 32px 0;text-align:center}
+  #cE .ehead .tag{justify-content:center}
+  #cE h1{font-family:"Fraunces",serif;font-size:clamp(38px,5.4vw,68px);font-weight:500;letter-spacing:-.01em;line-height:1.04;margin:18px 0 0}
+  #cE .byline{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--soft);margin-top:24px;letter-spacing:.03em}
+  #cE .rule{max-width:760px;margin:34px auto 0;border-top:1px solid var(--line)}
+  #cE .essay{max-width:660px;margin:0 auto;padding:40px 32px 70px}
+  #cE .essay p{font-family:"Fraunces",serif;font-size:20px;line-height:1.7;color:#23242b;margin-bottom:22px;font-weight:400}
+  #cE .essay p.first::first-letter{font-family:"Fraunces",serif;font-weight:600;float:left;font-size:4.4em;line-height:.78;padding:6px 12px 0 0;color:var(--smalt)}
+  #cE .essay h2{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--smalt);margin:44px 0 16px;font-weight:500}
+  #cE .essay .side{position:relative}
+  #cE .essay .sidenote{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--soft);line-height:1.5;border-left:2px solid var(--smalt);padding-left:12px;margin:22px 0}
+  #cE .end{text-align:center;font-family:"IBM Plex Mono",monospace;color:var(--smalt);margin-top:30px}
+
+  @media(max-width:880px){
+    #cA .wrap{grid-template-columns:1fr}
+    #cA .rail{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+    #cB .row{grid-template-columns:1fr;gap:8px}
+    #cD .top{grid-template-columns:1fr}
+    #cD .gal{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="switch">
+  <span class="brand">Article concepts</span>
+  <span class="grp">Case study</span>
+  <button data-p="cA" class="on">A · Dossier</button>
+  <button data-p="cB">B · Specimen</button>
+  <button data-p="cC">C · Cinematic</button>
+  <span class="grp">Project</span>
+  <button data-p="cD">D · Visual</button>
+  <span class="grp">Musing</span>
+  <button data-p="cE">E · Essay</button>
+</div>
+<div class="note">Recommendation: <b>three formats, three pages, one system.</b> Case studies are evidence-led and structured (A/B/C explore how). Projects are visual-forward with light narrative (D). Musings are text-first editorial, no metrics, different type voice (E). Same palette, type system and rules throughout, so they read as one site at three densities.</div>
+
+<section class="panel on" id="cA"></section>
+<section class="panel" id="cB"></section>
+<section class="panel" id="cC"></section>
+<section class="panel" id="cD"></section>
+<section class="panel" id="cE"></section>
+
+<script>
+const UNS = id => `https://images.unsplash.com/photo-${id}?w=1500&q=80&auto=format&fit=crop`;
+function img(id){
+  const fb='https://picsum.photos/seed/'+encodeURIComponent(id)+'/1500/950';
+  return `<img src="${UNS(id)}" alt="" loading="lazy" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='${fb}';}">`;
+}
+
+/* ---- content ---- */
+const kiosk = {
+  kicker:"Case study", title:"QikServe Kiosk",
+  stand:"Self-service ordering built for high-volume hospitality, designed to feel brand-specific, stay accessible, and hold up under real operational pressure at global scale.",
+  meta:{Client:"QikServe / Access Group", Role:"Head of Product Design", Timeframe:"2018–2024", Sector:"Hospitality tech"},
+  metrics:[["8,000+","locations"],["42","countries"],["130+","integrations"],["$1bn+","value handled"]],
+  pull:"White-label does not have to mean generic.",
+  hero:"1414235077428-338989a2e8c0",
+  figs:["1559339352-11d035aa65de","1517248135467-4c7edcad34c4"],
+  caps:["Kiosk attract and ordering states across operator brands","Deep modifier trees handled as a first-class pattern"],
+  sections:[
+    {h:"Context", p:["QikServe builds the self-service ordering layer for hospitality. The kiosk is the most demanding surface in that estate: a single product deployed across thousands of venues, dozens of brands, and dozens of countries, each with its own menu logic, payment setup, and operational habits.","The platform it sits within supports more than 8,000 locations across 42 countries, with over 130 integrations and more than a billion in value handled. It is a configurable product that has to behave correctly for a global coffee chain and an independent operator from the same codebase."]},
+    {h:"Problem", p:["White-label kiosks tend to fail in one of two directions. They collapse into a generic template no brand wants its name on, or they fragment into bespoke builds that cannot be maintained. Neither scales.","The kiosk carries an unusually high trust burden. It takes payment, handles allergen and dietary information, and verifies age for alcohol, all without staff present. Any ambiguity becomes an operational problem with a queue building behind the screen."]},
+    {h:"Constraints", p:["Every decision had to survive contact with real operations: legacy POS integrations, peripheral hardware, intermittent connectivity, accessibility legislation across regions, and brand guidelines ranging from a loose steer to a strict system.","Accessibility was a hard requirement, not a finishing pass. The kiosk had to meet ADA and WCAG expectations as a physical and digital product at once."]},
+    {h:"Structural model", p:["The answer was to treat the kiosk as a system of configurable behaviours rather than a fixed screen. Menu architecture, modifiers, basket logic, payment, loyalty, tipping, charity donation, age verification, and attract screens were each modelled as components an operator could turn on, restyle, and arrange without touching code.","Brand expression was scoped deliberately. Operators control styling, imagery, and tone within a structure that guarantees the journey still works."]},
+    {h:"Outcome", p:["The kiosk became the flagship surface of a platform operating across 8,000+ locations and 42 countries, deployed by major global brands alongside independents from the same configurable base. Accessibility leadership on the kiosk raised the standard across the wider estate.","White-label did not have to mean generic. A well-structured system let QikServe sell brand-specific experiences at scale without taking on bespoke maintenance, a commercial position as much as a design one."]},
+  ],
+};
+const strunk = {
+  kicker:"Project", title:"Strunk",
+  stand:"A microcopy management product that treats product language as infrastructure, keeping UX writing consistent across an entire platform.",
+  facts:{Client:"QikServe / Access", Year:"2023", Discipline:"Content systems", Role:"Design & build"},
+  lead:"1457369804613-52c61a468e7d",
+  gal:["1502920917128-1aa500764cbd","1483058712412-4245e9b90334","1517292987719-0369a794ec0f"],
+  body:["Strunk started as an internal tool for QikServe and was later rebuilt for Access. Its job is to manage product microcopy: the labels, prompts, errors, and guidance that make an interface usable, across many products and surfaces.","On a platform with twenty-plus products, language drifts. The same action gets three names, errors contradict each other, and tone fragments. Strunk made product language a managed system rather than scattered strings, governed and consistent in one place. Treating words as infrastructure is the same discipline as a design system, pointed at language."],
+};
+const essay = {
+  kicker:"Musing", title:"Why most design systems fail",
+  byline:"Richard Murphy · May 2026 · 6 min read",
+  sections:[
+    {h:"", p:["The easiest way to fail at a design system is to believe you have one because you have a Figma library and a package of components. The artefacts are the visible part. They are not the system. A design system is the set of decisions a team no longer has to make, the standards it enforces, and the speed it creates safely.", "When people say a system failed, they rarely mean the buttons were wrong. They mean nobody used them, or everybody forked them."], first:true},
+    {h:"Systems are behaviour", p:["The value of a system is behavioural. It shows up in the decisions it prevents and the arguments it ends. If two teams still debate the same dropdown every quarter, the library exists but the system does not. This is why governance matters more than coverage."], side:"A small set of components everyone adopts beats an exhaustive library teams route around."},
+    {h:"Language is part of it", p:["Most systems stop at the visual layer and leave product language to drift. The words in an interface are as load-bearing as the components, and they fragment just as fast. Treating microcopy as managed infrastructure is part of the same discipline."]},
+    {h:"What good looks like", p:["A working system is judged by adoption, consistency under pressure, and the speed at which a new product can be built without reinventing patterns. It is maintained like a product, with owners, versioning, and a way to deprecate. If no one owns it, it is already failing, it just has not noticed yet."]},
+  ],
+};
+
+/* ---- A: Dossier ---- */
+(function(){
+  const m = kiosk.metrics.map(x=>`<div class="mx"><div class="val">${x[0]}</div><div class="lab">${x[1]}</div></div>`).join('');
+  let secs='', idx='';
+  kiosk.sections.forEach((s,i)=>{
+    idx += `<a onclick="document.getElementById('aSec${i}').scrollIntoView()" data-i="${i}"><span class="nn">0${i+1}</span>${s.h}</a>`;
+    secs += `<div class="sec bodycopy" id="aSec${i}"><h3>${s.h}</h3>${s.p.map(p=>`<p>${p}</p>`).join('')}</div>`;
+    if(i===1) secs += `<figure class="bleed"><div class="fr">${img(kiosk.figs[0])}</div><figcaption>${kiosk.caps[0]}</figcaption></figure><div class="col"><div class="pull">${kiosk.pull}</div></div>`;
+    if(i===3) secs += `<figure class="bleed"><div class="fr">${img(kiosk.figs[1])}</div><figcaption>${kiosk.caps[1]}</figcaption></figure>`;
+  });
+  document.getElementById('cA').innerHTML = `
+    <div class="wrap">
+      <aside class="rail">
+        <div class="who">Richard Murphy</div>
+        <nav class="idx">${idx}</nav>
+      </aside>
+      <div class="main">
+        <div class="col">
+          <div class="kicker">${kiosk.kicker} · ${kiosk.meta.Client}</div>
+          <h1>${kiosk.title}</h1>
+          <p class="lede stand">${kiosk.stand}</p>
+          <div class="band">${m}</div>
+        </div>
+        ${secs}
+      </div>
+    </div>`;
+  // scrollspy
+  const links=[...document.querySelectorAll('#cA .idx a')];
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const i=e.target.id.replace('aSec','');links.forEach(l=>l.classList.toggle('act',l.dataset.i===i));}})},{rootMargin:'-45% 0px -50% 0px'});
+  kiosk.sections.forEach((_,i)=>obs.observe(document.getElementById('aSec'+i)));
+})();
+
+/* ---- B: Specimen ---- */
+(function(){
+  const meta = Object.entries(kiosk.meta).map(([k,v])=>`<div>${k}<b>${v}</b></div>`).join('');
+  const m = kiosk.metrics.map(x=>`<div class="mx"><div class="val">${x[0]}</div><div class="lab">${x[1]}</div></div>`).join('');
+  const labels=["Context","Problem","Constraints","Model","Outcome"];
+  const rows = kiosk.sections.map((s,i)=>`<div class="row"><div class="nn">0${i+1}<span class="lbl">${labels[i]||s.h}</span></div><div class="rc"><h2>${s.h}</h2><div class="bodycopy">${s.p.map(p=>`<p>${p}</p>`).join('')}</div></div>`).join('');
+  document.getElementById('cB').innerHTML = `
+    <div class="cover">
+      <div class="meta-top">${meta}</div>
+      <h1>${kiosk.title}</h1>
+      <p class="stand">${kiosk.stand}</p>
+    </div>
+    <div class="imgband"><div class="fr">${img(kiosk.hero)}</div></div>
+    <div class="metrics2">${m}</div>
+    <div class="sections">${rows}</div>`;
+})();
+
+/* ---- C: Cinematic ---- */
+(function(){
+  const hm = kiosk.metrics.map(x=>`<div class="mx"><div class="val">${x[0]}</div><div class="lab">${x[1]}</div></div>`).join('');
+  let body='';
+  kiosk.sections.forEach((s,i)=>{
+    body += `<div class="body"><h3 class="kicker" style="margin-bottom:14px">${s.h}</h3><div class="bodycopy">${s.p.map(p=>`<p>${p}</p>`).join('')}</div></div>`;
+    if(i===0) body += `<div class="wide"><div class="fr">${img(kiosk.figs[0])}</div></div>`;
+    if(i===2) body += `<div class="pull">${kiosk.pull}</div>`;
+    if(i===3) body += `<div class="wide"><div class="fr">${img(kiosk.figs[1])}</div></div>`;
+  });
+  document.getElementById('cC').innerHTML = `
+    <div class="hero">
+      <div class="bg">${img(kiosk.hero)}</div>
+      <div class="inner">
+        <div class="kicker" style="color:#fff;opacity:.8">${kiosk.kicker}</div>
+        <h1>${kiosk.title}</h1>
+        <p class="stand">${kiosk.stand}</p>
+        <div class="hmeta">${hm}</div>
+      </div>
+    </div>
+    ${body}`;
+})();
+
+/* ---- D: Project visual ---- */
+(function(){
+  const facts = Object.entries(strunk.facts).map(([k,v])=>`<div class="f"><span class="k">${k}</span><span>${v}</span></div>`).join('');
+  document.getElementById('cD').innerHTML = `
+    <div class="top">
+      <div><div class="kicker kind">${strunk.kicker}</div><h1>${strunk.title}</h1></div>
+      <div class="side"><p class="stand">${strunk.stand}</p><div class="facts">${facts}</div></div>
+    </div>
+    <div class="lead-img"><div class="fr">${img(strunk.lead)}</div></div>
+    <div class="gal">
+      <div class="g tall">${img(strunk.gal[0])}</div>
+      <div class="g">${img(strunk.gal[1])}</div>
+      <div class="g">${img(strunk.gal[2])}</div>
+    </div>
+    <div class="blurb">${strunk.body.map(p=>`<p>${p}</p>`).join('')}</div>`;
+})();
+
+/* ---- E: Musing essay ---- */
+(function(){
+  let html='';
+  essay.sections.forEach(s=>{
+    if(s.h) html += `<h2>${s.h}</h2>`;
+    html += `<div class="side">`;
+    s.p.forEach((p,j)=>{ html += `<p${s.first&&j===0?' class="first"':''}>${p}</p>`; });
+    if(s.side) html += `<div class="sidenote">${s.side}</div>`;
+    html += `</div>`;
+  });
+  document.getElementById('cE').innerHTML = `
+    <header class="ehead">
+      <div class="kicker tag" style="display:flex;justify-content:center">${essay.kicker}</div>
+      <h1>${essay.title}</h1>
+      <div class="byline">${essay.byline}</div>
+    </header>
+    <div class="rule"></div>
+    <article class="essay">${html}<div class="end">※</div></article>`;
+})();
+
+/* switcher */
+const btns=document.querySelectorAll('.switch button[data-p]');
+btns.forEach(b=>b.onclick=()=>{btns.forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));document.getElementById(b.dataset.p).classList.add('on');window.scrollTo(0,0);});
+</script>
+</body>
+</html>

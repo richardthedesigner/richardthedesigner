@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Index with rollovers — Smalt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#F7F6F2;--paper-2:#EEEDE7;--ink:#14151A;--soft:#5B5C63;--line:#D9D7CF;
+    --smalt:#1A46F0;--smalt-deep:#1438C2;--smalt-line:#3D62F4;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+  .mono{font-family:"IBM Plex Mono",monospace}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+
+  .home{display:grid;grid-template-columns:minmax(360px,38%) 1fr;min-height:100vh}
+
+  /* left smalt panel with live preview */
+  .mast{background:var(--smalt);color:#fff;padding:30px 30px 24px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  .mast .top{display:flex;align-items:baseline;gap:16px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:rgba(255,255,255,.72)}
+  .mast .top .logo{font-family:"IBM Plex Sans";font-weight:700;font-size:14px;color:#fff;letter-spacing:-.01em}
+  .mast .top nav{margin-left:auto;display:flex;gap:14px}
+  .mast .top nav a{cursor:pointer}.mast .top nav a:hover{color:#fff}
+
+  .sentence{margin-top:34px;font-size:clamp(23px,2.4vw,38px);font-weight:600;letter-spacing:-.02em;line-height:1.16}
+  .sentence .lead{color:rgba(255,255,255,.9)}
+  .sv{cursor:pointer;color:#fff;border-bottom:2px solid rgba(255,255,255,.32);transition:.14s;white-space:nowrap}
+  .sv:hover{border-bottom-color:#fff}
+  .sv.sel{background:#fff;color:var(--smalt);border-radius:6px;padding:0 8px;border-bottom-color:transparent}
+  .slash{color:rgba(255,255,255,.5);padding:0 2px}
+
+  /* preview area: shows blurb by default, image of hovered piece on hover */
+  .preview{margin-top:26px;flex:1;display:flex;flex-direction:column;justify-content:flex-end;min-height:0}
+  .preview .blurb{font-size:14.5px;color:rgba(255,255,255,.82);max-width:34ch;transition:opacity .2s}
+  .preview .pframe{position:absolute;left:30px;right:30px;top:50%;transform:translateY(-46%);
+    aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08);
+    opacity:0;transition:opacity .25s, transform .35s;pointer-events:none}
+  .preview .pframe.show{opacity:1;transform:translateY(-50%)}
+  .preview .pcap{position:absolute;left:30px;right:30px;bottom:62px;opacity:0;transition:opacity .2s;pointer-events:none}
+  .preview .pcap.show{opacity:1}
+  .preview .pcap .pt{font-size:22px;font-weight:600;letter-spacing:-.015em}
+  .preview .pcap .ps{font-family:"IBM Plex Mono",monospace;font-size:12px;color:rgba(255,255,255,.78);margin-top:3px}
+  .home.hovering .preview .blurb{opacity:0}
+
+  .foot{margin-top:18px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:rgba(255,255,255,.7);display:flex;flex-direction:column;gap:3px}
+  .foot .c{color:#fff}
+
+  /* grid with rollover media */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(200px,1fr)}
+  .cell{position:relative;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;cursor:pointer;overflow:hidden;background:var(--paper);transition:color .14s}
+  .cell .media{position:absolute;inset:0;opacity:0;transition:opacity .25s}
+  .cell .media::after{content:"";position:absolute;inset:0;background:var(--smalt);mix-blend-mode:multiply;opacity:.78}
+  .cell .media img{filter:grayscale(.2) contrast(1.02)}
+  .cell:hover .media{opacity:1}
+  .cell:hover{color:#fff}
+  .cell .num{position:relative;z-index:2;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft)}
+  .cell:hover .num{color:rgba(255,255,255,.85)}
+  .cell .t{position:relative;z-index:2;margin-top:auto;font-size:18px;font-weight:600;letter-spacing:-.012em}
+  .cell .s{position:relative;z-index:2;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft);margin-top:4px}
+  .cell:hover .s{color:rgba(255,255,255,.9)}
+  .cell .go{position:absolute;top:13px;right:15px;z-index:2;font-family:"IBM Plex Mono",monospace;opacity:0;transition:.14s;color:#fff}
+  .cell:hover .go{opacity:1}
+  .cell.dim{opacity:.3;pointer-events:none}
+
+  @media(max-width:880px){.home{grid-template-columns:1fr}.mast{position:static;height:auto}.preview .pframe{position:static;transform:none;margin-top:18px}.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="home" id="home">
+  <aside class="mast">
+    <div class="top"><span class="logo">Richard Murphy</span><nav><a>Index</a><a>Thinking</a><a>About</a></nav></div>
+    <div class="sentence" id="sentence">
+      <span class="lead">Show me how I </span><span class="sv sel" data-f="all">work</span><span class="slash">/</span><span class="sv" data-f="platform">run platforms</span><span class="slash">/</span><span class="sv" data-f="ai">build with AI</span><span class="slash">/</span><span class="sv" data-f="systems">make systems</span><span class="slash">/</span><span class="sv" data-f="brand">shape brands</span><span class="lead">.</span>
+    </div>
+    <div class="preview" id="preview">
+      <div class="pframe" id="pframe"><img id="pimg" alt=""></div>
+      <div class="pcap" id="pcap"><div class="pt" id="pt"></div><div class="ps" id="ps"></div></div>
+      <div class="blurb">Platforms operated at global scale. Systems built to be AI-native. Twelve years of making the thing, by hand.</div>
+    </div>
+    <div class="foot"><span class="c" id="count"></span><span>richardthedesigner.com</span><span>richard@tigerforest.co.uk</span></div>
+  </aside>
+  <section class="grid" id="grid"></section>
+</main>
+
+<script>
+const UNS=id=>`https://images.unsplash.com/photo-${id}?w=1100&q=80&auto=format&fit=crop`;
+const FB=id=>`https://picsum.photos/seed/${encodeURIComponent(id)}/1100/800`;
+function imgTag(id){return `<img src="${UNS(id)}" alt="" loading="lazy" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='${FB(id)}';}">`;}
+
+const works=[
+  {n:"01",t:"Access Evo",s:"Platform design system",f:["platform","systems"],img:"1551434678-e076c223a692"},
+  {n:"02",t:"QikServe Kiosk",s:"Self-service at scale",f:["platform","systems"],img:"1414235077428-338989a2e8c0"},
+  {n:"03",t:"Prepay × QikServe",s:"Post-merger fusion",f:["platform"],img:"1554224155-6726b3ff858f"},
+  {n:"04",t:"Access Kiosk Pocket",s:"Kiosk in your hand",f:["platform","ai"],img:"1556656793-08538906a9f8"},
+  {n:"05",t:"EvoGuest DS",s:"Hospitality system",f:["systems"],img:"1497366754035-f200968a6e72"},
+  {n:"06",t:"Orson",s:"AI-native venture",f:["ai","systems"],img:"1518770660439-4636190af475"},
+  {n:"07",t:"GDK Go-Live",s:"Estate-wide rollout",f:["platform"],img:"1552566626-52f8b828add9"},
+  {n:"08",t:"Quoin",s:"Systems advisory",f:["systems"],img:"1454165804606-c3d57bc86b40"},
+  {n:"09",t:"The Brotique",s:"Commerce & editorial",f:["brand","ai"],img:"1503602642458-232111445657"},
+  {n:"10",t:"Strunk",s:"Editorial system",f:["brand","systems"],img:"1457369804613-52c61a468e7d"},
+  {n:"11",t:"iAmHere",s:"Presence, reimagined",f:["ai","brand"],img:"1512941937669-90a1b58e7e9c"},
+  {n:"12",t:"Realise Offices",s:"Spatial brand system",f:["brand"],img:"1497366811353-6870744d04b2"},
+];
+
+const grid=document.getElementById('grid');
+const home=document.getElementById('home');
+const pframe=document.getElementById('pframe'), pimg=document.getElementById('pimg'),
+      pcap=document.getElementById('pcap'), pt=document.getElementById('pt'), ps=document.getElementById('ps');
+let filter='all';
+
+function render(){
+  grid.innerHTML=''; let shown=0;
+  works.forEach(w=>{
+    const on=filter==='all'||w.f.includes(filter); if(on)shown++;
+    const c=document.createElement('a');
+    c.className='cell'+(on?'':' dim');
+    c.innerHTML=`<div class="media">${imgTag(w.img)}</div><span class="num">${w.n}</span><span class="go">↗</span><div class="t">${w.t}</div><div class="s">${w.s}</div>`;
+    c.addEventListener('mouseenter',()=>{
+      home.classList.add('hovering');
+      pimg.src=UNS(w.img); pimg.onerror=()=>{if(!pimg.dataset.fb){pimg.dataset.fb=1;pimg.src=FB(w.img);}};
+      pt.textContent=w.t; ps.textContent=w.s;
+      pframe.classList.add('show'); pcap.classList.add('show');
+    });
+    c.addEventListener('mouseleave',()=>{
+      home.classList.remove('hovering'); pframe.classList.remove('show'); pcap.classList.remove('show');
+    });
+    grid.appendChild(c);
+  });
+  document.getElementById('count').textContent=shown+' of '+works.length+' pieces';
+}
+document.querySelectorAll('#sentence .sv').forEach(v=>v.onclick=()=>{
+  document.querySelectorAll('#sentence .sv').forEach(x=>x.classList.remove('sel'));v.classList.add('sel');
+  filter=v.dataset.f; render();
+});
+render();
+</script>
+</body>
+</html>

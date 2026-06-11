@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+dist/
+out/
+build/
+
+# Sanity
+studio/.sanity/
+**/schema.json
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs / OS
+*.log
+.DS_Store
+
+# Private working material (not for the public repo)
+*.docx
+sanity-schema/content-drafts.md
+Portfolio-Content-Inventory.docx

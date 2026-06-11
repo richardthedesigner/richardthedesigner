@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Index ↔ Article connection — concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F6F2; --paper-2:#EEEDE7; --ink:#14151A; --soft:#5B5C63;
+    --line:#D9D7CF; --smalt:#1A46F0; --smalt-deep:#1438C2; --smalt-line:#3D62F4; --smalt-wash:#E5E9FF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+  .mono{font-family:"IBM Plex Mono",monospace}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+  figure{margin:0}
+  figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--soft);margin-top:9px}
+
+  /* switcher */
+  .switch{position:sticky;top:0;z-index:80;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+    background:rgba(247,246,242,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 18px}
+  .switch .brand{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--soft);margin-right:auto}
+  .switch .lbl{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin-right:4px}
+  .switch button{font-family:"IBM Plex Mono",monospace;font-size:12px;background:none;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;color:var(--soft);transition:.15s}
+  .switch button:hover{color:var(--ink)}
+  .switch button.on{background:var(--smalt);color:#fff;border-color:var(--smalt)}
+
+  #app{}
+
+  /* ===== shared smalt panel DNA ===== */
+  .srail{background:var(--smalt);color:#fff;display:flex;flex-direction:column;position:sticky;top:43px;height:calc(100vh - 43px);padding:26px 26px 22px}
+  .srail .logo{font-weight:700;font-size:14px;letter-spacing:-.01em}
+  .srail .top{display:flex;align-items:baseline;gap:16px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:rgba(255,255,255,.72)}
+  .srail .top nav{margin-left:auto;display:flex;gap:14px}
+  .srail .top nav a{cursor:pointer}.srail .top nav a:hover{color:#fff}
+  .srail .ticker{margin-top:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;color:rgba(255,255,255,.7);display:flex;flex-direction:column;gap:3px}
+  .srail .ticker .c{color:#fff}
+
+  /* sentence filter (index) */
+  .sentence{margin-top:40px;font-size:clamp(24px,2.5vw,40px);font-weight:600;letter-spacing:-.02em;line-height:1.16}
+  .sentence .lead{color:rgba(255,255,255,.9)}
+  .sv{cursor:pointer;color:#fff;border-bottom:2px solid rgba(255,255,255,.32);transition:.14s;white-space:nowrap}
+  .sv:hover{border-bottom-color:#fff}
+  .sv.sel{background:#fff;color:var(--smalt);border-radius:6px;padding:0 8px;border-bottom-color:transparent}
+  .slash{color:rgba(255,255,255,.5);padding:0 2px}
+  .blurb{margin-top:22px;max-width:34ch;font-size:14.5px;color:rgba(255,255,255,.82)}
+
+  /* ===== RAIL model ===== */
+  .shell{display:grid;grid-template-columns:minmax(330px,34%) 1fr;min-height:calc(100vh - 43px)}
+  .rgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(190px,1fr)}
+  .cell{position:relative;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 15px;display:flex;flex-direction:column;cursor:pointer;background:var(--paper);transition:background .12s,color .12s;overflow:hidden}
+  .cell:hover{background:var(--smalt);color:#fff}
+  .cell .num{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft)}
+  .cell:hover .num{color:rgba(255,255,255,.78)}
+  .cell .t{margin-top:auto;font-size:17px;font-weight:600;letter-spacing:-.012em}
+  .cell .s{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft);margin-top:4px}
+  .cell:hover .s{color:rgba(255,255,255,.82)}
+  .cell .go{position:absolute;top:12px;right:14px;font-family:"IBM Plex Mono",monospace;opacity:0;transition:.14s;color:#fff}
+  .cell:hover .go{opacity:1}
+  .cell.dim{opacity:.26;pointer-events:none}
+
+  /* rail in ARTICLE mode */
+  .srail.amode .cur{margin-top:38px}
+  .srail.amode .cur .bignum{font-family:"IBM Plex Mono",monospace;font-size:64px;line-height:.9;font-weight:500;color:rgba(255,255,255,.55)}
+  .srail.amode .cur .ct{font-size:clamp(26px,2.6vw,40px);font-weight:600;letter-spacing:-.025em;line-height:1.05;margin-top:10px}
+  .srail.amode .cur .cs{font-family:"IBM Plex Mono",monospace;font-size:12px;color:rgba(255,255,255,.72);margin-top:8px}
+  .srail.amode .tags{margin-top:16px;display:flex;gap:6px;flex-wrap:wrap}
+  .srail.amode .tags .tg{font-family:"IBM Plex Mono",monospace;font-size:11px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:3px 9px;color:#fff}
+  .srail .back{font-family:"IBM Plex Mono",monospace;font-size:12px;color:#fff;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.4);align-self:flex-start;margin-top:22px}
+  .srail .pn{margin-top:22px;display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--smalt-line);padding-top:16px;font-family:"IBM Plex Mono",monospace;font-size:12px}
+  .srail .pn a{cursor:pointer;color:rgba(255,255,255,.85)}.srail .pn a:hover{color:#fff}
+  .srail .pn a.disabled{opacity:.3;pointer-events:none}
+
+  /* ===== SPLIT model (master/detail) ===== */
+  .shell.split{grid-template-columns:minmax(300px,28%) 1fr}
+  .slist{position:sticky;top:43px;height:calc(100vh - 43px);overflow:auto;border-right:1px solid var(--line);background:var(--paper)}
+  .slist .lhead{padding:22px 22px 14px;border-bottom:1px solid var(--line)}
+  .slist .lhead .logo{font-weight:700;font-size:14px}
+  .slist .lhead .sub{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft);margin-top:4px}
+  .slist .filters{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
+  .slist .filters button{font-family:"IBM Plex Mono",monospace;font-size:10.5px;border:1px solid var(--line);background:none;border-radius:999px;padding:4px 9px;cursor:pointer;color:var(--soft)}
+  .slist .filters button.on{background:var(--smalt);color:#fff;border-color:var(--smalt)}
+  .litem{display:flex;gap:12px;align-items:baseline;padding:13px 22px;border-bottom:1px solid var(--line);cursor:pointer;transition:.12s}
+  .litem .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft)}
+  .litem .lt{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .litem .ls{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--soft);margin-left:auto}
+  .litem:hover{background:var(--smalt-wash)}
+  .litem.act{background:var(--smalt);color:#fff}
+  .litem.act .n,.litem.act .ls{color:rgba(255,255,255,.8)}
+  .litem.dim{opacity:.32}
+
+  /* ===== shared ARTICLE body (the opened cell) ===== */
+  .rcontent{min-height:calc(100vh - 43px);background:var(--paper)}
+  .ahead{padding:34px 44px 26px;border-bottom:1px solid var(--line)}
+  .ahead .anum{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--smalt)}
+  .ahead h1{font-size:clamp(34px,4vw,58px);font-weight:600;letter-spacing:-.03em;line-height:1;margin:10px 0 0}
+  .ahead .stand{max-width:62ch;margin-top:18px;font-size:clamp(16px,1.5vw,19px);color:#2b2c33;line-height:1.55}
+  .ahead .meta{margin-top:20px;display:flex;gap:26px;flex-wrap:wrap}
+  .ahead .meta .m .k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+  .ahead .meta .m .v{font-size:14px;font-weight:500;margin-top:2px}
+  .ahead .meta .tg{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--smalt);border:1px solid var(--smalt);border-radius:999px;padding:2px 9px;margin-right:5px;display:inline-block}
+
+  .ametrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .ametrics .mx{background:var(--paper);padding:20px 22px}
+  .ametrics .val{font-size:clamp(24px,2.6vw,38px);font-weight:700;letter-spacing:-.02em;color:var(--smalt)}
+  .ametrics .lab{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--soft);margin-top:3px}
+
+  .asections{padding:14px 0 50px}
+  .arow{display:grid;grid-template-columns:90px 1fr;gap:22px;padding:30px 44px;border-bottom:1px solid var(--line);max-width:1000px}
+  .arow .nn{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--smalt)}
+  .arow .rc h2{font-size:21px;font-weight:600;letter-spacing:-.012em;margin-bottom:12px}
+  .arow .rc p{font-size:16.5px;line-height:1.7;color:#26272E;margin-bottom:14px;max-width:64ch}
+  .afig{padding:26px 44px}
+  .afig .fr{aspect-ratio:16/8;overflow:hidden;background:linear-gradient(135deg,var(--smalt),var(--smalt-deep));border-radius:4px;max-width:1000px}
+  .apull{padding:8px 44px 30px}
+  .apull .q{font-size:clamp(22px,2.4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--smalt);max-width:20ch}
+  .indexPrompt{padding:60px 44px;color:var(--soft);font-size:16px;max-width:50ch}
+  .indexPrompt b{color:var(--ink)}
+
+  @media(max-width:880px){
+    .shell,.shell.split{grid-template-columns:1fr}
+    .srail,.slist{position:static;height:auto}
+    .rgrid{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="switch">
+  <span class="brand">Index ↔ article connection</span>
+  <span class="lbl">Model</span>
+  <button data-m="rail" class="on">Persistent rail</button>
+  <button data-m="split">Index stays (master / detail)</button>
+  <button onclick="resetView()">Reset to index</button>
+</div>
+
+<div id="app"></div>
+
+<script>
+const UNS = id => `https://images.unsplash.com/photo-${id}?w=1500&q=80&auto=format&fit=crop`;
+function img(id){const fb='https://picsum.photos/seed/'+encodeURIComponent(id)+'/1500/950';
+  return `<img src="${UNS(id)}" alt="" loading="lazy" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='${fb}';}">`;}
+
+const works = [
+  {n:"01", t:"Access Evo", slug:"access-evo", s:"Platform design system", type:"caseStudy", f:["platform","systems"]},
+  {n:"02", t:"QikServe Kiosk", slug:"qikserve-kiosk", s:"Self-service at scale", type:"caseStudy", f:["platform","systems"]},
+  {n:"03", t:"Prepay × QikServe", slug:"prepay-qikserve", s:"Post-merger fusion", type:"caseStudy", f:["platform"]},
+  {n:"04", t:"Access Kiosk Pocket", slug:"access-kiosk-pocket", s:"Kiosk in your hand", type:"caseStudy", f:["platform","ai"]},
+  {n:"05", t:"EvoGuest DS", slug:"evoguest-ds", s:"Hospitality system", type:"caseStudy", f:["systems"]},
+  {n:"06", t:"Orson", slug:"orson", s:"AI-native venture", type:"caseStudy", f:["ai","systems"]},
+  {n:"07", t:"GDK Go-Live", slug:"gdk-go-live", s:"Estate-wide rollout", type:"caseStudy", f:["platform"]},
+  {n:"08", t:"Quoin", slug:"quoin", s:"Systems advisory", type:"caseStudy", f:["systems"]},
+  {n:"09", t:"The Brotique", slug:"the-brotique", s:"Commerce & editorial", type:"project", f:["brand","ai"]},
+  {n:"10", t:"Strunk", slug:"strunk", s:"Editorial system", type:"project", f:["brand","systems"]},
+  {n:"11", t:"iAmHere", slug:"iamhere", s:"Presence, reimagined", type:"project", f:["ai","brand"]},
+  {n:"12", t:"Realise Offices", slug:"realise-offices", s:"Spatial brand system", type:"project", f:["brand"]},
+];
+const TAGLABEL={platform:"Run platforms", ai:"Build with AI", systems:"Make systems", brand:"Shape brands"};
+
+const content = {
+  "qikserve-kiosk":{
+    title:"QikServe Kiosk", kind:"Case study",
+    stand:"Self-service ordering built for high-volume hospitality, designed to feel brand-specific, stay accessible, and hold up under real operational pressure at global scale.",
+    meta:{Client:"QikServe / Access", Role:"Head of Product Design", Timeframe:"2018–2024"},
+    metrics:[["8,000+","locations"],["42","countries"],["130+","integrations"],["$1bn+","handled"]],
+    pull:"White-label does not have to mean generic.",
+    figs:["1559339352-11d035aa65de","1517248135467-4c7edcad34c4"],
+    cap:["Ordering states across operator brands","Deep modifier trees as a first-class pattern"],
+    sections:[
+      {h:"Context",p:["QikServe builds the self-service ordering layer for hospitality. The kiosk is the most demanding surface in that estate: a single product across thousands of venues, dozens of brands, dozens of countries, each with its own menu logic and operational habits.","It is a configurable product that has to behave correctly for a global coffee chain and an independent operator from the same codebase."]},
+      {h:"Problem",p:["White-label kiosks either collapse into a generic template no brand wants its name on, or fragment into bespoke builds that cannot be maintained. The kiosk also carries a high trust burden: payment, allergens, age verification, all without staff present."]},
+      {h:"Structural model",p:["The kiosk was built as a system of configurable behaviours rather than a fixed screen. Menu, modifiers, basket, payment, loyalty, tipping, age verification and attract screens are components an operator turns on and restyles without touching code. The system flexes on surface and holds firm on flow."]},
+      {h:"Outcome",p:["The kiosk became the flagship surface of a platform across 8,000+ locations and 42 countries, deployed by major global brands alongside independents from one configurable base. Accessibility leadership raised the standard across the estate."]},
+    ],
+  },
+  "strunk":{
+    title:"Strunk", kind:"Project",
+    stand:"A microcopy management product that treats product language as infrastructure, keeping UX writing consistent across an entire platform.",
+    meta:{Client:"QikServe / Access", Year:"2023", Discipline:"Content systems"},
+    metrics:[],
+    figs:["1502920917128-1aa500764cbd"],
+    cap:["Managing product language as a governed system"],
+    sections:[
+      {h:"Context",p:["Strunk started as an internal tool for QikServe and was rebuilt for Access. It manages product microcopy: the labels, prompts, errors and guidance that make an interface usable, across many products."]},
+      {h:"Why it matters",p:["On a platform with twenty-plus products, language drifts. Strunk made product language a managed system rather than scattered strings. Treating words as infrastructure is the same discipline as a design system, pointed at language."]},
+    ],
+  },
+};
+function lightDoc(w){return {title:w.t, kind:w.type==='project'?'Project':'Case study', stand:w.s+'.', meta:{}, metrics:[], figs:["1551434678-e076c223a692"], cap:[""], sections:[{h:"Overview",p:[w.s+'. Full write-up in progress.']}], stub:true};}
+
+/* ---------- state ---------- */
+let state = {model:'rail', view:'index', slug:null, filter:'all'};
+const app = document.getElementById('app');
+const findWork = s => works.find(w=>w.slug===s);
+const idxOf = s => works.findIndex(w=>w.slug===s);
+
+/* ---------- pieces ---------- */
+function sentenceHTML(){
+  const v=(f,l)=>`<span class="sv${state.filter===f?' sel':''}" onclick="setFilter('${f}')">${l}</span>`;
+  return `<div class="sentence"><span class="lead">Show me how I </span>${v('all','work')}<span class="slash">/</span>${v('platform','run platforms')}<span class="slash">/</span>${v('ai','build with AI')}<span class="slash">/</span>${v('systems','make systems')}<span class="slash">/</span>${v('brand','shape brands')}<span class="lead">.</span></div>`;
+}
+function tickerHTML(){return `<div class="ticker"><span class="c">Product Design & Platform Strategy</span><span>richardthedesigner.com</span><span>richard@tigerforest.co.uk</span></div>`;}
+
+function gridHTML(){
+  let shown=0;
+  const cells = works.map(w=>{
+    const on = state.filter==='all'||w.f.includes(state.filter); if(on)shown++;
+    return `<a class="cell${on?'':' dim'}" onclick="openArticle('${w.slug}')"><span class="num">${w.n}</span><span class="go">↗</span><div class="t">${w.t}</div><div class="s">${w.s}</div></a>`;
+  }).join('');
+  return cells;
+}
+
+function articleHTML(slug){
+  const w=findWork(slug); const d=content[slug]||lightDoc(w);
+  const tags=(w.f||[]).filter(x=>TAGLABEL[x]).map(x=>`<span class="tg">${TAGLABEL[x]}</span>`).join('');
+  const meta=Object.entries(d.meta).map(([k,v])=>`<div class="m"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  const metrics=d.metrics.length?`<div class="ametrics">${d.metrics.map(m=>`<div class="mx"><div class="val">${m[0]}</div><div class="lab">${m[1]}</div></div>`).join('')}</div>`:'';
+  let body='';
+  d.sections.forEach((s,i)=>{
+    body+=`<div class="arow"><div class="nn">0${i+1}</div><div class="rc"><h2>${s.h}</h2>${s.p.map(p=>`<p>${p}</p>`).join('')}</div></div>`;
+    if(i===0 && d.figs[0]) body+=`<div class="afig"><figure><div class="fr">${img(d.figs[0])}</div><figcaption>${d.cap[0]||''}</figcaption></figure></div>`;
+    if(i===1 && d.pull) body+=`<div class="apull"><div class="q">${d.pull}</div></div>`;
+    if(i===2 && d.figs[1]) body+=`<div class="afig"><figure><div class="fr">${img(d.figs[1])}</div><figcaption>${d.cap[1]||''}</figcaption></figure></div>`;
+  });
+  return `
+    <div class="ahead">
+      <div class="anum">${w.n} / ${w.s}</div>
+      <h1>${d.title}</h1>
+      <p class="stand">${d.stand}</p>
+      <div class="meta">${meta}${tags?`<div class="m"><div class="k">Tags</div><div class="v">${tags}</div></div>`:''}</div>
+    </div>
+    ${metrics}
+    <div class="asections">${body}</div>`;
+}
+
+/* ---------- shells ---------- */
+function renderRailIndex(){
+  app.innerHTML=`<div class="shell">
+    <aside class="srail">
+      <div class="top"><span class="logo">Richard Murphy</span><nav><a onclick="resetView()">Index</a><a>Thinking</a><a>About</a></nav></div>
+      ${sentenceHTML()}
+      <p class="blurb">Platforms operated at global scale. Systems built to be AI-native. Twelve years of making the thing, by hand.</p>
+      ${tickerHTML()}
+    </aside>
+    <section class="rgrid">${gridHTML()}</section>
+  </div>`;
+}
+function renderRailArticle(slug){
+  const w=findWork(slug); const i=idxOf(slug);
+  const prev=works[i-1], next=works[i+1];
+  const tags=(w.f||[]).filter(x=>TAGLABEL[x]).map(x=>`<span class="tg">${TAGLABEL[x]}</span>`).join('');
+  app.innerHTML=`<div class="shell">
+    <aside class="srail amode">
+      <div class="top"><span class="logo">Richard Murphy</span><nav><a onclick="resetView()">Index</a><a>Thinking</a><a>About</a></nav></div>
+      <a class="back" onclick="resetView()">← Index</a>
+      <div class="cur"><div class="bignum">${w.n}</div><div class="ct">${w.t}</div><div class="cs">${w.s}</div><div class="tags">${tags}</div></div>
+      <div class="pn">
+        <a class="${prev?'':'disabled'}" onclick="${prev?`openArticle('${prev.slug}')`:''}">← ${prev?prev.t:''}</a>
+        <a class="${next?'':'disabled'}" onclick="${next?`openArticle('${next.slug}')`:''}">${next?next.t:''} →</a>
+      </div>
+      ${tickerHTML()}
+    </aside>
+    <section class="rcontent">${articleHTML(slug)}</section>
+  </div>`;
+  const c=document.querySelector('.rcontent'); if(c)c.scrollTop=0; window.scrollTo(0,0);
+}
+function renderSplit(){
+  const items=works.map(w=>{
+    const on=state.filter==='all'||w.f.includes(state.filter);
+    return `<a class="litem${state.slug===w.slug?' act':''}${on?'':' dim'}" onclick="openArticle('${w.slug}')"><span class="n">${w.n}</span><span class="lt">${w.t}</span><span class="ls">${w.s}</span></a>`;
+  }).join('');
+  const fb=(f,l)=>`<button class="${state.filter===f?'on':''}" onclick="setFilter('${f}')">${l}</button>`;
+  const right = state.slug ? articleHTML(state.slug)
+    : `<div class="indexPrompt">This is the <b>master / detail</b> model. The index never leaves the screen. Pick any piece on the left and it opens here, so you can move between work without going back to a home page. The active item stays lit in smalt.</div>`;
+  app.innerHTML=`<div class="shell split">
+    <aside class="slist">
+      <div class="lhead"><div class="logo">Richard Murphy</div><div class="sub">Selected work — index</div>
+        <div class="filters">${fb('all','All')}${fb('platform','Platforms')}${fb('ai','AI')}${fb('systems','Systems')}${fb('brand','Brand')}</div>
+      </div>
+      ${items}
+    </aside>
+    <section class="rcontent">${right}</section>
+  </div>`;
+  const c=document.querySelector('.rcontent'); if(c)c.scrollTop=0;
+}
+
+/* ---------- actions ---------- */
+function render(){
+  if(state.model==='rail') return state.view==='article'&&state.slug ? renderRailArticle(state.slug) : renderRailIndex();
+  return renderSplit();
+}
+function setFilter(f){ state.filter=f; render(); }
+function openArticle(slug){ state.slug=slug; state.view='article'; render(); }
+function resetView(){ state.view='index'; state.slug=null; render(); }
+document.querySelectorAll('.switch button[data-m]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.switch button[data-m]').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  state.model=b.dataset.m;
+  if(state.model==='split' && !state.slug){ state.slug='qikserve-kiosk'; state.view='article'; }
+  render();
+});
+render();
+</script>
+</body>
+</html>

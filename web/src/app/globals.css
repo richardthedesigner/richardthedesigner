@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Design tokens — translated directly from the approved prototypes
+   (bn-grid-smalt-riffs-v2.html + bn-article-motion-v2.html). Do not eyeball.
+   =========================================================================== */
+@theme {
+  --color-paper: #f7f6f2;
+  --color-paper-2: #eeede7;
+  --color-ink: #14151a;
+  --color-soft: #5b5c63;
+  --color-line: #d9d7cf;
+
+  --color-smalt: #1a46f0;
+  --color-smalt-deep: #1438c2;
+  --color-smalt-line: #3d62f4;
+
+  --color-cream: #fbf7ef;
+  --color-warm-line: #e7dfcf;
+  --color-warm-ink: #2a2722;
+  --color-rust: #b5723a;
+  --color-rust-deep: #9a5a28;
+
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-display: var(--font-fraunces), Georgia, serif;
+}
+
+/* ===========================================================================
+   Base
+   =========================================================================== */
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus for keyboard users everywhere. */
+:focus-visible {
+  outline: 2px solid var(--color-smalt);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 200;
+  background: var(--color-smalt);
+  color: #fff;
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+/* ===========================================================================
+   Footer ticker
+   =========================================================================== */
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ticker-run {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-scroll 36s linear infinite;
+  will-change: transform;
+}
+.ticker-run > span {
+  margin: 0 18px;
+}
+
+/* ===========================================================================
+   Scroll-reveal + hero motion (article templates)
+   =========================================================================== */
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes zoom {
+  to {
+    transform: scale(1);
+  }
+}
+.canvas-rise {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: rise 0.5s 0.02s forwards cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.hero-zoom {
+  transform: scale(1.06);
+  animation: zoom 1.4s forwards cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Grid-cell media rollover */
+.cell-media {
+  opacity: 0;
+  transform: scale(1);
+  transition:
+    opacity 0.25s ease,
+    transform 0.5s ease;
+}
+.cell:hover .cell-media,
+.cell:focus-within .cell-media {
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+/* Drop cap on the first paragraph of a musings essay */
+.muse-essay > p:first-of-type::first-letter {
+  font-family: var(--font-display);
+  font-weight: 600;
+  float: left;
+  font-size: 4.2em;
+  line-height: 0.78;
+  padding: 8px 12px 0 0;
+  color: var(--color-rust);
+}
+
+/* ===========================================================================
+   Reduced motion — non-negotiable. Kill every animation/transition and show
+   all reveal targets in their final state.
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .canvas-rise,
+  .hero-zoom {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .ticker-run {
+    animation: none !important;
+  }
+  .cell-media {
+    transition: opacity 0.001ms !important;
+  }
+}

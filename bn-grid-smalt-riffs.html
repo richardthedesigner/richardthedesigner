@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Index / Smalt — three riffs on the B+N grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F6F2;
+    --paper-2:#EEEDE7;
+    --ink:#14151A;
+    --ink-soft:#5B5C63;
+    --line:#D9D7CF;
+    --smalt:#1A46F0;       /* portfolio accent, treated as smalt */
+    --smalt-deep:#122C9E;  /* pigment-deep smalt for fills */
+    --smalt-wash:#E5E9FF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.4;
+  }
+  .mono{font-family:"IBM Plex Mono",monospace}
+  a{color:inherit;text-decoration:none}
+
+  /* ---------- switcher ---------- */
+  .switch{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;gap:2px;
+    background:rgba(247,246,242,.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:10px 18px;
+  }
+  .switch .brand{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;letter-spacing:.04em;color:var(--ink-soft);
+    margin-right:auto;
+  }
+  .switch button{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;letter-spacing:.02em;
+    background:none;border:1px solid transparent;border-radius:999px;
+    padding:6px 14px;cursor:pointer;color:var(--ink-soft);
+    transition:.15s;
+  }
+  .switch button:hover{color:var(--ink)}
+  .switch button.on{background:var(--smalt);color:#fff}
+
+  .panel{display:none;min-height:calc(100vh - 43px)}
+  .panel.on{display:block}
+
+  .riff-head{
+    padding:34px 40px 18px;border-bottom:1px solid var(--line);
+  }
+  .riff-head .kicker{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--smalt);
+  }
+  .riff-head h2{font-size:26px;font-weight:600;letter-spacing:-.01em;margin-top:6px}
+  .riff-head p{max-width:62ch;color:var(--ink-soft);font-size:14px;margin-top:8px}
+
+  /* ============================================================
+     RIFF A — THE SPINE  (faithful B+N stacked index + story rail)
+     ============================================================ */
+  .a-stage{display:grid;grid-template-columns:230px 1fr;min-height:70vh}
+  .a-rail{
+    border-right:1px solid var(--line);padding:26px 22px;
+    position:sticky;top:43px;align-self:start;
+  }
+  .a-rail .lbl{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;
+  }
+  .chapter{
+    display:block;font-size:15px;padding:7px 0;color:var(--ink-soft);
+    cursor:pointer;border-bottom:1px dotted transparent;transition:.15s;
+  }
+  .chapter .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--smalt);margin-right:8px}
+  .chapter:hover,.chapter.act{color:var(--ink)}
+  .chapter.act{font-weight:600}
+  .a-index{padding:14px 40px 60px}
+  .idx-row{
+    display:flex;align-items:baseline;gap:14px;
+    padding:9px 0;border-bottom:1px solid var(--line);
+    cursor:pointer;transition:.15s;opacity:.32;
+  }
+  .idx-row.lit{opacity:1}
+  .idx-row:hover{padding-left:10px}
+  .idx-row .t{font-size:clamp(20px,2.4vw,30px);font-weight:600;letter-spacing:-.015em}
+  .idx-row:hover .t{color:var(--smalt)}
+  .idx-row .meta{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft)}
+  .idx-row .chip{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.04em;
+    color:var(--smalt);border:1px solid var(--smalt);border-radius:3px;padding:1px 6px;
+  }
+
+  /* ============================================================
+     RIFF B — SMALT DUOTONE GRID  (media grid + sentence filter)
+     ============================================================ */
+  .b-filter{
+    padding:22px 40px;border-bottom:1px solid var(--line);
+    font-size:clamp(18px,2.6vw,30px);font-weight:500;letter-spacing:-.01em;line-height:1.5;
+  }
+  .b-filter .verb{
+    color:var(--smalt);cursor:pointer;border-bottom:2px solid var(--smalt-wash);
+    transition:.15s;
+  }
+  .b-filter .verb:hover,.b-filter .verb.sel{border-bottom-color:var(--smalt)}
+  .b-filter .verb.sel{background:var(--smalt);color:#fff;border-radius:3px;padding:0 6px}
+  .b-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border-bottom:1px solid var(--line);
+  }
+  .cell{
+    position:relative;aspect-ratio:4/3;background:var(--paper);
+    overflow:hidden;cursor:pointer;
+  }
+  .cell .duo{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(120% 120% at 30% 20%, var(--smalt) 0%, var(--smalt-deep) 55%, #0a1a52 100%);
+    opacity:0;transition:.35s;mix-blend-mode:normal;
+  }
+  .cell .ph{
+    position:absolute;inset:0;
+    background:linear-gradient(135deg,var(--paper-2),#dcdad2);
+  }
+  .cell .ph::after{
+    content:"";position:absolute;inset:0;opacity:.5;
+    background:repeating-linear-gradient(45deg,transparent 0 9px,rgba(0,0,0,.05) 9px 10px);
+  }
+  .cell:hover .duo{opacity:.92}
+  .cell .info{
+    position:absolute;left:14px;bottom:12px;right:14px;z-index:2;
+    transition:.3s;
+  }
+  .cell .info .t{font-size:16px;font-weight:600;letter-spacing:-.01em}
+  .cell .info .s{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-soft)}
+  .cell:hover .info .t,.cell:hover .info .s{color:#fff}
+  .cell .num{
+    position:absolute;top:11px;left:13px;z-index:2;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft);
+  }
+  .cell:hover .num{color:rgba(255,255,255,.8)}
+
+  /* ============================================================
+     RIFF C — READING ORDER  (verbs reorder the index into a story)
+     ============================================================ */
+  .c-wrap{display:grid;grid-template-columns:1fr 320px;min-height:70vh}
+  .c-main{padding:30px 40px 60px}
+  .c-claim{font-size:clamp(22px,3vw,38px);font-weight:600;letter-spacing:-.02em;max-width:18ch;line-height:1.12}
+  .c-claim em{color:var(--smalt);font-style:normal}
+  .c-list{margin-top:30px;border-top:1px solid var(--line)}
+  .c-item{
+    display:grid;grid-template-columns:34px 1fr auto;gap:16px;align-items:baseline;
+    padding:13px 0;border-bottom:1px solid var(--line);transition:.2s;
+  }
+  .c-item .ix{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--smalt)}
+  .c-item .nm{font-size:18px;font-weight:500}
+  .c-item .role{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft);text-align:right;max-width:30ch}
+  .c-item:hover{background:var(--smalt-wash)}
+  .c-aside{
+    border-left:1px solid var(--line);padding:30px 26px;
+    position:sticky;top:43px;align-self:start;
+  }
+  .c-aside .lbl{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+  .verbbtn{
+    display:block;width:100%;text-align:left;background:none;cursor:pointer;
+    border:none;border-bottom:1px solid var(--line);
+    font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--ink-soft);
+    padding:13px 0;transition:.15s;font-family:inherit;
+  }
+  .verbbtn:hover{color:var(--ink);padding-left:8px}
+  .verbbtn.on{color:var(--smalt)}
+  .verbbtn .sub{display:block;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.04em;color:var(--ink-soft);font-weight:400;margin-top:2px}
+
+  /* ---------- shared ticker ---------- */
+  .ticker{
+    border-top:1px solid var(--line);background:var(--paper);
+    overflow:hidden;white-space:nowrap;padding:9px 0;
+  }
+  .ticker .run{
+    display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+    color:var(--ink-soft);animation:scroll 34s linear infinite;
+  }
+  .ticker .run span{margin:0 18px}
+  .ticker .run b{color:var(--smalt);font-weight:500}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  @media(max-width:760px){
+    .a-stage,.c-wrap{grid-template-columns:1fr}
+    .a-rail,.c-aside{position:static;border:none;border-bottom:1px solid var(--line)}
+    .b-grid{grid-template-columns:repeat(2,1fr)}
+    .c-aside{border-left:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="switch">
+  <span class="brand">RM — index / smalt · 3 riffs</span>
+  <button data-p="a" class="on">A · The Spine</button>
+  <button data-p="b">B · Smalt Duotone</button>
+  <button data-p="c">C · Reading Order</button>
+</div>
+
+<!-- ===================== RIFF A ===================== -->
+<section class="panel on" id="a">
+  <div class="riff-head">
+    <div class="kicker">Riff A — faithful to B+N</div>
+    <h2>The Spine</h2>
+    <p>Keeps the Bareis + Nicolaus stacked-text index exactly as is — a quiet wall of titles. The only move: the left tag rail stops listing mediums (3D, Apparel, Vinyl) and becomes a <strong>story spine</strong>. Five chapters of how you work. Hover a chapter and the index dims to only the work that proves it, flooding smalt.</p>
+  </div>
+  <div class="a-stage">
+    <aside class="a-rail">
+      <div class="lbl">Read by chapter</div>
+      <span class="chapter act" data-ch="all"><span class="n">00</span>Everything</span>
+      <span class="chapter" data-ch="platform"><span class="n">01</span>Operate at scale</span>
+      <span class="chapter" data-ch="ai"><span class="n">02</span>Build AI-native</span>
+      <span class="chapter" data-ch="systems"><span class="n">03</span>Design the system</span>
+      <span class="chapter" data-ch="transform"><span class="n">04</span>Transform the org</span>
+      <span class="chapter" data-ch="craft"><span class="n">05</span>Keep craft visible</span>
+    </aside>
+    <div class="a-index" id="aIndex"></div>
+  </div>
+  <div class="ticker"><div class="run" id="tickA"></div></div>
+</section>
+
+<!-- ===================== RIFF B ===================== -->
+<section class="panel" id="b">
+  <div class="riff-head">
+    <div class="kicker">Riff B — the grid goes literal</div>
+    <h2>Smalt Duotone</h2>
+    <p>Trades the text index for B+N's other mode: a hard square media grid. Every thumbnail is washed in a smalt duotone on hover, so the whole wall reads as one material. The tag filter is rewritten as a <strong>sentence</strong> you complete — pick a verb and the grid answers it.</p>
+  </div>
+  <div class="b-filter">
+    Show me how I
+    <span class="verb sel" data-f="all">work</span> /
+    <span class="verb" data-f="platform">run platforms</span> /
+    <span class="verb" data-f="ai">build with AI</span> /
+    <span class="verb" data-f="systems">make systems</span> /
+    <span class="verb" data-f="brand">shape brands</span>.
+  </div>
+  <div class="b-grid" id="bGrid"></div>
+  <div class="ticker"><div class="run" id="tickB"></div></div>
+</section>
+
+<!-- ===================== RIFF C ===================== -->
+<section class="panel" id="c">
+  <div class="riff-head">
+    <div class="kicker">Riff C — tags become narration</div>
+    <h2>Reading Order</h2>
+    <p>The tags aren't filters any more — they're the verbs of a sentence about you, and choosing one <strong>re-sequences</strong> the whole index into that story. The headline rewrites itself, the order changes, the roles surface. Design is the method, not the identity.</p>
+  </div>
+  <div class="c-wrap">
+    <div class="c-main">
+      <h1 class="c-claim" id="cClaim">Design is the <em>method</em>, not the identity.</h1>
+      <div class="c-list" id="cList"></div>
+    </div>
+    <aside class="c-aside">
+      <div class="lbl">Choose the throughline</div>
+      <button class="verbbtn on" data-v="method">Method<span class="sub">the default reel</span></button>
+      <button class="verbbtn" data-v="operate">Operate<span class="sub">platform at scale</span></button>
+      <button class="verbbtn" data-v="build">Build<span class="sub">AI-native systems</span></button>
+      <button class="verbbtn" data-v="transform">Transform<span class="sub">orgs & teams</span></button>
+      <button class="verbbtn" data-v="make">Make<span class="sub">brand & craft</span></button>
+    </aside>
+  </div>
+  <div class="ticker"><div class="run" id="tickC"></div></div>
+</section>
+
+<script>
+/* ---------- data: real-ish portfolio work ---------- */
+const work = [
+  {t:"Access Evo",        s:"Platform design system",     ch:["platform","systems","ai"], f:["platform","systems"], role:"Lead · platform DS", num:"01"},
+  {t:"QikServe Kiosk",    s:"Self-service at global scale",ch:["platform","systems"],      f:["platform","systems"], role:"Head of Product Design", num:"02"},
+  {t:"Prepay × QikServe", s:"Post-merger product fusion",  ch:["platform","transform"],    f:["platform"],          role:"Merger · product", num:"03"},
+  {t:"Access Kiosk Pocket",s:"Kiosk in your hand",         ch:["platform","ai"],           f:["platform","ai"],     role:"Concept → ship", num:"04"},
+  {t:"EvoGuest DS",       s:"Hospitality design system",   ch:["systems","platform"],      f:["systems"],           role:"Design system", num:"05"},
+  {t:"Orson",             s:"AI-native venture",           ch:["ai","systems"],            f:["ai"],                role:"Founder", num:"06"},
+  {t:"GDK Kiosk Go-Live", s:"Estate-wide rollout",         ch:["transform","platform"],    f:["platform"],          role:"Delivery", num:"07"},
+  {t:"Quoin",             s:"Strategy & systems advisory", ch:["transform","systems"],     f:["systems"],           role:"Advisor", num:"08"},
+  {t:"The Brotique",      s:"Commerce brand & editorial",  ch:["craft","ai"],              f:["brand"],             role:"Founder · brand", num:"09"},
+  {t:"Strunk",            s:"Editorial system",            ch:["craft","systems"],         f:["brand","systems"],   role:"Design", num:"10"},
+  {t:"iAmHere",           s:"Presence, reimagined",        ch:["ai","craft"],              f:["ai","brand"],        role:"Product", num:"11"},
+  {t:"Realise Offices",   s:"Spatial brand system",        ch:["craft","systems"],         f:["brand"],             role:"Brand system", num:"12"},
+];
+
+/* ---------- panel switcher ---------- */
+const btns=document.querySelectorAll('.switch button[data-p]');
+btns.forEach(b=>b.onclick=()=>{
+  btns.forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById(b.dataset.p).classList.add('on');
+});
+
+/* ---------- RIFF A ---------- */
+const aIndex=document.getElementById('aIndex');
+function drawA(ch){
+  aIndex.innerHTML='';
+  work.forEach(w=>{
+    const lit = ch==='all' || w.ch.includes(ch);
+    const row=document.createElement('a');
+    row.className='idx-row'+(lit?' lit':'');
+    row.innerHTML=`<span class="t">${w.t}</span>
+      ${ch!=='all'&&lit?`<span class="chip">${labelA(ch)}</span>`:''}
+      <span class="meta">${w.s}</span>`;
+    aIndex.appendChild(row);
+  });
+}
+function labelA(c){return {platform:"SCALE",ai:"AI",systems:"SYSTEM",transform:"CHANGE",craft:"CRAFT"}[c]||c}
+document.querySelectorAll('#a .chapter').forEach(c=>{
+  c.onmouseenter=()=>drawA(c.dataset.ch);
+  c.onclick=()=>{document.querySelectorAll('#a .chapter').forEach(x=>x.classList.remove('act'));c.classList.add('act');drawA(c.dataset.ch);};
+});
+drawA('all');
+
+/* ---------- RIFF B ---------- */
+const bGrid=document.getElementById('bGrid');
+function drawB(f){
+  bGrid.innerHTML='';
+  work.filter(w=>f==='all'||w.f.includes(f)).forEach(w=>{
+    const c=document.createElement('a');
+    c.className='cell';
+    c.innerHTML=`<div class="ph"></div><div class="duo"></div>
+      <span class="num">${w.num}</span>
+      <div class="info"><div class="t">${w.t}</div><div class="s">${w.s}</div></div>`;
+    bGrid.appendChild(c);
+  });
+}
+document.querySelectorAll('#b .verb').forEach(v=>v.onclick=()=>{
+  document.querySelectorAll('#b .verb').forEach(x=>x.classList.remove('sel'));
+  v.classList.add('sel');drawB(v.dataset.f);
+});
+drawB('all');
+
+/* ---------- RIFF C ---------- */
+const claims={
+  method:"Design is the <em>method</em>, not the identity.",
+  operate:"I <em>operate</em> platforms at global scale.",
+  build:"I <em>build</em> systems that are AI-native.",
+  transform:"I <em>transform</em> how product orgs work.",
+  make:"I still <em>make</em> the thing, by hand."
+};
+const orderC={
+  method:["Access Evo","Orson","QikServe Kiosk","The Brotique","EvoGuest DS","Quoin","iAmHere","Strunk"],
+  operate:["QikServe Kiosk","Access Evo","Prepay × QikServe","GDK Kiosk Go-Live","Access Kiosk Pocket","EvoGuest DS"],
+  build:["Orson","Access Evo","iAmHere","Access Kiosk Pocket","The Brotique"],
+  transform:["Quoin","Prepay × QikServe","GDK Kiosk Go-Live","Access Evo","EvoGuest DS"],
+  make:["The Brotique","Strunk","Realise Offices","iAmHere","Orson"]
+};
+const cClaim=document.getElementById('cClaim');
+const cList=document.getElementById('cList');
+function drawC(v){
+  cClaim.innerHTML=claims[v];
+  cList.innerHTML='';
+  orderC[v].forEach((name,i)=>{
+    const w=work.find(x=>x.t===name)||{role:''};
+    const r=document.createElement('a');
+    r.className='c-item';
+    r.innerHTML=`<span class="ix">${String(i+1).padStart(2,'0')}</span>
+      <span class="nm">${name}</span><span class="role">${w.role}</span>`;
+    cList.appendChild(r);
+  });
+}
+document.querySelectorAll('#c .verbbtn').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#c .verbbtn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');drawC(b.dataset.v);
+});
+drawC('method');
+
+/* ---------- tickers ---------- */
+const tk='<span>Richard Murphy</span><span>Product Design &amp; Platform Strategy</span><span><b>richardthedesigner.com</b></span><span>Stuttgart 21.6°C</span><span>Hamburg 5.8°C</span><span>Edinburgh 11.2°C</span>';
+['tickA','tickB','tickC'].forEach(id=>document.getElementById(id).innerHTML=tk+tk);
+</script>
+</body>
+</html>

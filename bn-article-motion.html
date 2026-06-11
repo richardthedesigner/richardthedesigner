@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Index → Article, in motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#F7F6F2;--paper-2:#EEEDE7;--ink:#14151A;--soft:#5B5C63;--line:#D9D7CF;
+    --smalt:#1A46F0;--smalt-deep:#1438C2;--smalt-line:#3D62F4;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+  .mono{font-family:"IBM Plex Mono",monospace}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+  figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--soft);margin-top:9px}
+
+  .bar{position:sticky;top:0;z-index:90;display:flex;gap:14px;align-items:center;background:rgba(247,246,242,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 18px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--soft)}
+  .bar b{color:var(--ink);font-family:"IBM Plex Sans";font-weight:600}
+  .bar .hint{margin-left:auto}
+
+  #app{}
+
+  /* ---------- INDEX ---------- */
+  .home{display:grid;grid-template-columns:minmax(340px,36%) 1fr;min-height:calc(100vh - 41px)}
+  .mast{background:var(--smalt);color:#fff;padding:30px;position:sticky;top:41px;height:calc(100vh - 41px);display:flex;flex-direction:column;overflow:hidden}
+  .mast .logo{font-weight:700;font-size:14px}
+  .sentence{margin-top:32px;font-size:clamp(22px,2.3vw,36px);font-weight:600;letter-spacing:-.02em;line-height:1.16}
+  .sentence .lead{color:rgba(255,255,255,.9)}
+  .sv{cursor:pointer;color:#fff;border-bottom:2px solid rgba(255,255,255,.32);transition:.14s;white-space:nowrap}
+  .sv:hover{border-bottom-color:#fff}.sv.sel{background:#fff;color:var(--smalt);border-radius:6px;padding:0 8px;border-bottom-color:transparent}
+  .slash{color:rgba(255,255,255,.5);padding:0 2px}
+  .preview{margin-top:24px;flex:1;position:relative}
+  .preview .blurb{font-size:14px;color:rgba(255,255,255,.82);max-width:34ch;position:absolute;bottom:0;transition:opacity .2s}
+  .home.hovering .preview .blurb{opacity:0}
+  .preview .pframe{position:absolute;left:0;right:0;bottom:0;aspect-ratio:4/3;border-radius:6px;overflow:hidden;opacity:0;transform:translateY(8px) scale(.99);transition:.3s}
+  .preview .pframe.show{opacity:1;transform:none}
+  .preview .pcap{position:absolute;left:14px;bottom:14px;z-index:2;color:#fff;opacity:0;transition:.2s}
+  .preview .pcap.show{opacity:1}
+  .preview .pcap .pt{font-size:20px;font-weight:600}.preview .pcap .ps{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:rgba(255,255,255,.85)}
+  .foot{margin-top:16px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:rgba(255,255,255,.7);display:flex;flex-direction:column;gap:2px}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(190px,1fr)}
+  .cell{position:relative;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 15px;display:flex;flex-direction:column;cursor:pointer;overflow:hidden;background:var(--paper);transition:color .14s}
+  .cell .media{position:absolute;inset:0;opacity:0;transition:opacity .25s,transform .5s}
+  .cell .media::after{content:"";position:absolute;inset:0;background:var(--smalt);mix-blend-mode:multiply;opacity:.78}
+  .cell:hover .media{opacity:1;transform:scale(1.04)}
+  .cell:hover{color:#fff}
+  .cell .num,.cell .t,.cell .s{position:relative;z-index:2}
+  .cell .num{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft)}.cell:hover .num{color:rgba(255,255,255,.85)}
+  .cell .t{margin-top:auto;font-size:17px;font-weight:600;letter-spacing:-.012em}
+  .cell .s{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--soft);margin-top:4px}.cell:hover .s{color:rgba(255,255,255,.9)}
+  .cell .go{position:absolute;top:12px;right:14px;z-index:2;font-family:"IBM Plex Mono",monospace;opacity:0;transition:.14s;color:#fff}.cell:hover .go{opacity:1}
+  .cell.dim{opacity:.3;pointer-events:none}
+
+  /* ---------- ARTICLE ---------- */
+  .article{display:grid;grid-template-columns:minmax(300px,30%) 1fr;min-height:calc(100vh - 41px)}
+  .arail{background:var(--smalt);color:#fff;padding:28px;position:sticky;top:41px;height:calc(100vh - 41px);display:flex;flex-direction:column}
+  .arail .back{font-family:"IBM Plex Mono",monospace;font-size:12px;color:#fff;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.4);align-self:flex-start}
+  .arail .bignum{font-family:"IBM Plex Mono",monospace;font-size:58px;line-height:.9;color:rgba(255,255,255,.5);margin-top:34px}
+  .arail .ct{font-size:clamp(26px,2.5vw,38px);font-weight:600;letter-spacing:-.025em;line-height:1.04;margin-top:10px}
+  .arail .cs{font-family:"IBM Plex Mono",monospace;font-size:12px;color:rgba(255,255,255,.75);margin-top:8px}
+  .arail .tags{margin-top:14px;display:flex;gap:6px;flex-wrap:wrap}
+  .arail .tags .tg{font-family:"IBM Plex Mono",monospace;font-size:11px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:3px 9px}
+  .arail .pn{margin-top:auto;display:flex;justify-content:space-between;border-top:1px solid var(--smalt-line);padding-top:16px;font-family:"IBM Plex Mono",monospace;font-size:12px}
+  .arail .pn a{cursor:pointer;color:rgba(255,255,255,.85)}.arail .pn a:hover{color:#fff}.arail .pn a.disabled{opacity:.3;pointer-events:none}
+
+  .canvas{min-width:0}
+  /* entrance motion */
+  .canvas{opacity:0;transform:translateY(14px);animation:rise .5s .02s forwards cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .ahero{position:relative;height:64vh;min-height:420px;overflow:hidden;background:var(--smalt-deep)}
+  .ahero .bg{position:absolute;inset:0;transform:scale(1.06);animation:zoom 1.4s forwards cubic-bezier(.2,.7,.2,1)}
+  @keyframes zoom{to{transform:scale(1)}}
+  .ahero .bg img{opacity:.5}
+  .ahero .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(120% 100% at 25% 15%,rgba(26,70,240,.55),rgba(10,20,70,.78))}
+  .ahero .lede{position:absolute;left:0;right:0;bottom:0;z-index:2;color:#fff;padding:0 44px 38px}
+  .ahero .lede .k{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+  .ahero .lede h1{font-size:clamp(34px,4.4vw,64px);font-weight:600;letter-spacing:-.03em;line-height:1;margin-top:10px;max-width:16ch}
+  .ahero .lede p{margin-top:16px;max-width:60ch;font-size:clamp(16px,1.5vw,20px);color:rgba(255,255,255,.92);line-height:1.5}
+
+  /* metrics with count-up */
+  .ametrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .ametrics .mx{background:var(--paper);padding:24px}
+  .ametrics .val{font-size:clamp(28px,3vw,44px);font-weight:700;letter-spacing:-.02em;color:var(--smalt)}
+  .ametrics .lab{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--soft);margin-top:4px}
+
+  /* reveal on scroll */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s, transform .6s}
+  .reveal.in{opacity:1;transform:none}
+
+  /* SCROLLYTELLING: pinned media + stepped text (the anti-monotony move) */
+  .scrolly{display:grid;grid-template-columns:1fr 1fr}
+  .scrolly .steps{padding:8vh 44px}
+  .scrolly .step{min-height:74vh;display:flex;flex-direction:column;justify-content:center}
+  .scrolly .step .sn{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--smalt)}
+  .scrolly .step h2{font-size:clamp(24px,2.4vw,34px);font-weight:600;letter-spacing:-.02em;margin:10px 0 14px}
+  .scrolly .step p{font-size:17px;line-height:1.7;color:#26272E;max-width:46ch;margin-bottom:12px}
+  .scrolly .stage{position:sticky;top:41px;height:calc(100vh - 41px);overflow:hidden;background:var(--paper-2);border-left:1px solid var(--line)}
+  .scrolly .stage .layer{position:absolute;inset:0;opacity:0;transform:scale(1.04);transition:opacity .6s, transform 1.2s}
+  .scrolly .stage .layer.on{opacity:1;transform:none}
+  .scrolly .stage .scap{position:absolute;left:18px;bottom:16px;z-index:3;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#fff;background:rgba(20,21,26,.55);padding:5px 10px;border-radius:4px;backdrop-filter:blur(4px)}
+
+  .fullband{height:78vh;overflow:hidden;position:relative}
+  .fullband img{transform:scale(1.04)}
+  .quote{padding:8vh 44px;max-width:980px}
+  .quote .q{font-size:clamp(26px,3vw,44px);font-weight:600;letter-spacing:-.02em;line-height:1.15;color:var(--smalt);max-width:18ch}
+
+  /* BRIEF shape */
+  .brief .lead{padding:40px 44px;max-width:62ch;font-size:clamp(18px,1.8vw,24px);line-height:1.5;color:#2b2c33}
+  .brief .gal{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;padding:0 44px 30px}
+  .brief .gal .g{overflow:hidden;border-radius:4px;background:var(--paper-2)}
+  .brief .gal .g.a{grid-column:span 8;aspect-ratio:16/10}
+  .brief .gal .g.b{grid-column:span 4;aspect-ratio:4/5}
+  .brief .gal .g.c{grid-column:span 4;aspect-ratio:4/5}
+  .brief .gal .g.d{grid-column:span 8;aspect-ratio:16/9}
+  .brief .facts{padding:6px 44px 70px;display:flex;gap:30px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--soft)}
+  .brief .facts b{display:block;color:var(--ink);font-family:"IBM Plex Sans";font-size:15px;margin-top:3px}
+
+  .closer{padding:6vh 44px 9vh;border-top:1px solid var(--line);max-width:680px}
+  .closer p{font-size:17px;line-height:1.7;color:#26272E}
+
+  @media(max-width:900px){
+    .home,.article{grid-template-columns:1fr}.mast,.arail{position:static;height:auto}
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .scrolly{grid-template-columns:1fr}.scrolly .stage{display:none}
+    .brief .gal .g{grid-column:span 12 !important;aspect-ratio:16/9 !important}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="bar"><b>Richard Murphy</b><span>Index → article, in motion</span><span class="hint">Hover the grid · click any piece · scroll the article</span></div>
+<div id="app"></div>
+
+<script>
+const UNS=id=>`https://images.unsplash.com/photo-${id}?w=1400&q=80&auto=format&fit=crop`;
+const FB=id=>`https://picsum.photos/seed/${encodeURIComponent(id)}/1400/950`;
+function imgTag(id,cls=''){return `<img class="${cls}" src="${UNS(id)}" alt="" loading="lazy" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='${FB(id)}';}">`;}
+
+const works=[
+  {n:"01",t:"Access Evo",slug:"access-evo",s:"Platform design system",f:["platform","systems"],img:"1551434678-e076c223a692",shape:"long"},
+  {n:"02",t:"QikServe Kiosk",slug:"qikserve-kiosk",s:"Self-service at scale",f:["platform","systems"],img:"1414235077428-338989a2e8c0",shape:"long"},
+  {n:"03",t:"Prepay × QikServe",slug:"prepay-qikserve",s:"Post-merger fusion",f:["platform"],img:"1554224155-6726b3ff858f",shape:"long"},
+  {n:"04",t:"Access Kiosk Pocket",slug:"access-kiosk-pocket",s:"Kiosk in your hand",f:["platform","ai"],img:"1556656793-08538906a9f8",shape:"brief"},
+  {n:"05",t:"EvoGuest DS",slug:"evoguest-ds",s:"Hospitality system",f:["systems"],img:"1497366754035-f200968a6e72",shape:"long"},
+  {n:"06",t:"Orson",slug:"orson",s:"AI-native venture",f:["ai","systems"],img:"1518770660439-4636190af475",shape:"brief"},
+  {n:"07",t:"GDK Go-Live",slug:"gdk-go-live",s:"Estate-wide rollout",f:["platform"],img:"1552566626-52f8b828add9",shape:"brief"},
+  {n:"08",t:"Quoin",slug:"quoin",s:"Systems advisory",f:["systems"],img:"1454165804606-c3d57bc86b40",shape:"brief"},
+  {n:"09",t:"The Brotique",slug:"the-brotique",s:"Commerce & editorial",f:["brand","ai"],img:"1503602642458-232111445657",shape:"brief"},
+  {n:"10",t:"Strunk",slug:"strunk",s:"Editorial system",f:["brand","systems"],img:"1457369804613-52c61a468e7d",shape:"long"},
+  {n:"11",t:"iAmHere",slug:"iamhere",s:"Presence, reimagined",f:["ai","brand"],img:"1512941937669-90a1b58e7e9c",shape:"brief"},
+  {n:"12",t:"Realise Offices",slug:"realise-offices",s:"Spatial brand system",f:["brand"],img:"1497366811353-6870744d04b2",shape:"brief"},
+];
+const TAGLABEL={platform:"Run platforms",ai:"Build with AI",systems:"Make systems",brand:"Shape brands"};
+
+const content={
+  "qikserve-kiosk":{
+    lede:"Self-service ordering built for high-volume hospitality, designed to feel brand-specific, stay accessible, and hold up under real operational pressure at global scale.",
+    metrics:[{pre:"",val:8000,post:"+",lab:"locations",fmt:1},{pre:"",val:42,post:"",lab:"countries"},{pre:"",val:130,post:"+",lab:"integrations"},{pre:"$",val:1,post:"bn+",lab:"value handled"}],
+    steps:[
+      {n:"01",h:"Context",p:["One product, thousands of venues, dozens of brands and countries. Each with its own menu logic, payment setup and operational habits, all served from a single configurable codebase."],img:"1414235077428-338989a2e8c0",cap:"Kiosk attract + ordering"},
+      {n:"02",h:"Problem",p:["White-label kiosks either go generic, so no brand wants their name on them, or bespoke, so they cannot be maintained. And the screen takes payment, handles allergens and verifies age with no staff present. Ambiguity becomes a queue."],img:"1559339352-11d035aa65de",cap:"Trust without staff present"},
+      {n:"03",h:"Structural model",p:["Built as a system of configurable behaviours, not a fixed screen. Menu, modifiers, basket, payment, loyalty, tipping, age verification and attract screens are components an operator turns on and restyles without code. It flexes on surface, holds firm on flow."],img:"1517248135467-4c7edcad34c4",cap:"Modifiers as a first-class pattern"},
+      {n:"04",h:"Outcome",p:["The flagship surface of a platform across 8,000+ locations and 42 countries, run by global brands beside independents from one base. Accessibility leadership raised the standard across the estate."],img:"1551218808-94e220e084d2",cap:"Deployed at global scale"},
+    ],
+    quote:"White-label does not have to mean generic.",
+    full:"1504674900247-0877df9cc836",
+    close:"A well-structured system let QikServe sell brand-specific experiences at scale without taking on bespoke maintenance. That is a commercial position as much as a design one.",
+  },
+  "realise-offices":{
+    lede:"Brand carried into physical space. Lobby, entrance and communal areas across an office estate, designed so the environment reads as one identity without over-designing the workplace.",
+    gallery:["1497366811353-6870744d04b2","1524758631624-e2822e304c36","1431540015161-0bf868a2d407","1497366754035-f200968a6e72"],
+    facts:{Client:"Realise",Scope:"Estate, 4 sites",Discipline:"Environmental design",Year:"2022"},
+    close:"Multi-site brand implementation is a system of small, compounding decisions: signage, materials, thresholds. Get those right and the space feels considered without shouting.",
+  },
+};
+function lightLong(w){return {lede:w.s+".", metrics:[], steps:[{n:"01",h:"Overview",p:[w.s+". Full write-up in progress."],img:w.img,cap:""}], quote:"", full:w.img, close:"More on this piece soon."};}
+function lightBrief(w){return {lede:w.s+".", gallery:[w.img,"1551434678-e076c223a692","1497366754035-f200968a6e72"], facts:{Status:"In progress"}, close:"More on this piece soon."};}
+
+let state={view:"index",slug:null,filter:"all"};
+const app=document.getElementById('app');
+const findWork=s=>works.find(w=>w.slug===s);
+const idxOf=s=>works.findIndex(w=>w.slug===s);
+
+/* ---------- INDEX ---------- */
+function renderIndex(){
+  let shown=0;
+  const cells=works.map(w=>{const on=state.filter==='all'||w.f.includes(state.filter);if(on)shown++;
+    return `<a class="cell${on?'':' dim'}" data-img="${w.img}" data-t="${w.t}" data-s="${w.s}" onclick="open_('${w.slug}')">
+      <div class="media">${imgTag(w.img)}</div><span class="num">${w.n}</span><span class="go">↗</span><div class="t">${w.t}</div><div class="s">${w.s}</div></a>`;}).join('');
+  const v=(f,l)=>`<span class="sv${state.filter===f?' sel':''}" onclick="event.stopPropagation();setFilter('${f}')">${l}</span>`;
+  app.innerHTML=`<div class="home" id="home">
+    <aside class="mast">
+      <div class="logo">Richard Murphy</div>
+      <div class="sentence"><span class="lead">Show me how I </span>${v('all','work')}<span class="slash">/</span>${v('platform','run platforms')}<span class="slash">/</span>${v('ai','build with AI')}<span class="slash">/</span>${v('systems','make systems')}<span class="slash">/</span>${v('brand','shape brands')}<span class="lead">.</span></div>
+      <div class="preview">
+        <div class="pframe" id="pframe"><img id="pimg" alt=""></div>
+        <div class="pcap" id="pcap"><div class="pt" id="pt"></div><div class="ps" id="ps"></div></div>
+        <div class="blurb">Platforms operated at global scale. Systems built to be AI-native. Twelve years of making the thing, by hand.</div>
+      </div>
+      <div class="foot"><span style="color:#fff">${shown} of ${works.length} pieces</span><span>richardthedesigner.com</span></div>
+    </aside>
+    <section class="grid">${cells}</section>
+  </div>`;
+  const home=document.getElementById('home'),pframe=document.getElementById('pframe'),pimg=document.getElementById('pimg'),pcap=document.getElementById('pcap'),pt=document.getElementById('pt'),ps=document.getElementById('ps');
+  document.querySelectorAll('.cell').forEach(c=>{
+    c.addEventListener('mouseenter',()=>{const id=c.dataset.img;home.classList.add('hovering');pimg.src=UNS(id);pimg.onerror=()=>{if(!pimg.dataset.fb){pimg.dataset.fb=1;pimg.src=FB(id);}};pt.textContent=c.dataset.t;ps.textContent=c.dataset.s;pframe.classList.add('show');pcap.classList.add('show');});
+    c.addEventListener('mouseleave',()=>{home.classList.remove('hovering');pframe.classList.remove('show');pcap.classList.remove('show');});
+  });
+}
+
+/* ---------- ARTICLE ---------- */
+function railHTML(w){
+  const i=idxOf(w.slug),prev=works[i-1],next=works[i+1];
+  const tags=(w.f||[]).filter(x=>TAGLABEL[x]).map(x=>`<span class="tg">${TAGLABEL[x]}</span>`).join('');
+  return `<aside class="arail">
+    <a class="back" onclick="reset_()">← Index</a>
+    <div class="bignum">${w.n}</div><div class="ct">${w.t}</div><div class="cs">${w.s}</div><div class="tags">${tags}</div>
+    <div class="pn"><a class="${prev?'':'disabled'}" onclick="${prev?`open_('${prev.slug}')`:''}">← prev</a><a class="${next?'':'disabled'}" onclick="${next?`open_('${next.slug}')`:''}">next →</a></div>
+  </aside>`;
+}
+function renderLong(w){
+  const d=content[w.slug]||lightLong(w);
+  const metrics=d.metrics.length?`<div class="ametrics reveal">${d.metrics.map((m,i)=>`<div class="mx"><div class="val" data-pre="${m.pre}" data-val="${m.val}" data-post="${m.post}" data-fmt="${m.fmt||0}">${m.pre}0${m.post}</div><div class="lab">${m.lab}</div></div>`).join('')}</div>`:'';
+  const layers=d.steps.map((s,i)=>`<div class="layer${i===0?' on':''}" data-i="${i}">${imgTag(s.img)}<div class="scap">${s.cap||''}</div></div>`).join('');
+  const steps=d.steps.map((s,i)=>`<div class="step" data-i="${i}"><div class="sn">${s.n}</div><h2>${s.h}</h2>${s.p.map(p=>`<p>${p}</p>`).join('')}</div>`).join('');
+  app.innerHTML=`<div class="article">${railHTML(w)}<div class="canvas">
+    <div class="ahero"><div class="bg">${imgTag(w.img)}</div><div class="lede"><div class="k">Case study</div><h1>${w.t}</h1><p>${d.lede}</p></div></div>
+    ${metrics}
+    <div class="scrolly"><div class="steps">${steps}</div><div class="stage" id="stage">${layers}</div></div>
+    ${d.quote?`<div class="quote reveal"><div class="q">${d.quote}</div></div>`:''}
+    ${d.full?`<div class="fullband reveal">${imgTag(d.full)}</div>`:''}
+    <div class="closer reveal"><p>${d.close}</p></div>
+  </div></div>`;
+  initMotion();
+  initScrolly();
+}
+function renderBrief(w){
+  const d=content[w.slug]||lightBrief(w);
+  const g=d.gallery||[];
+  const facts=Object.entries(d.facts||{}).map(([k,v])=>`<div>${k}<b>${v}</b></div>`).join('');
+  app.innerHTML=`<div class="article">${railHTML(w)}<div class="canvas brief">
+    <div class="ahero"><div class="bg">${imgTag(w.img)}</div><div class="lede"><div class="k">${w.shape==='brief'?(w.f.includes('ai')?'Project':'Project'):'Project'}</div><h1>${w.t}</h1></div></div>
+    <p class="lead reveal">${d.lede}</p>
+    <div class="gal">
+      <div class="g a reveal">${g[0]?imgTag(g[0]):''}</div>
+      <div class="g b reveal">${g[1]?imgTag(g[1]):''}</div>
+      <div class="g c reveal">${g[2]?imgTag(g[2]):''}</div>
+      <div class="g d reveal">${g[3]?imgTag(g[3]):''}</div>
+    </div>
+    <div class="facts reveal">${facts}</div>
+    <div class="closer reveal"><p>${d.close}</p></div>
+  </div></div>`;
+  initMotion();
+}
+
+/* ---------- motion helpers ---------- */
+function initMotion(){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');if(e.target.classList.contains('ametrics'))countUp(e.target);io.unobserve(e.target);}}),{rootMargin:'0px 0px -12% 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  window.scrollTo(0,0);
+}
+function countUp(band){
+  band.querySelectorAll('.val').forEach(el=>{
+    const pre=el.dataset.pre,post=el.dataset.post,target=+el.dataset.val,fmt=el.dataset.fmt==='1';
+    const dur=900,t0=performance.now();
+    function step(t){const k=Math.min(1,(t-t0)/dur);const e=1-Math.pow(1-k,3);let n=Math.round(target*e);
+      el.textContent=pre+(fmt?n.toLocaleString('en-GB'):n)+post;if(k<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);
+  });
+}
+function initScrolly(){
+  const stage=document.getElementById('stage'); if(!stage)return;
+  const layers=[...stage.querySelectorAll('.layer')];
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const i=+e.target.dataset.i;layers.forEach(l=>l.classList.toggle('on',+l.dataset.i===i));}}),{rootMargin:'-45% 0px -45% 0px'});
+  document.querySelectorAll('.scrolly .step').forEach(s=>io.observe(s));
+}
+
+/* ---------- actions ---------- */
+function render(){if(state.view==='article'){const w=findWork(state.slug);(w.shape==='brief'?renderBrief:renderLong)(w);}else renderIndex();}
+function setFilter(f){state.filter=f;render();}
+function open_(slug){state.slug=slug;state.view='article';render();}
+function reset_(){state.view='index';state.slug=null;render();}
+render();
+</script>
+</body>
+</html>

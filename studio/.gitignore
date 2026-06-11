@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.sanity/
+*.log
+
+# env / secrets
+.env
+.env.local
+.env.*.local
+
+# typegen artifacts (regenerated on build)
+schema.json

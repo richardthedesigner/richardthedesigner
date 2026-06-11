@@ -1,0 +1,75 @@
+{
+  "comment": "Maps Drive images to Sanity documents. Download each file from viewUrl into import/images/ keeping the filename, then run import-images.mjs (see README).",
+  "images": [
+    {
+      "filename": "kiosk-hero.png",
+      "driveTitle": "Kiosk hero image.png",
+      "viewUrl": "https://drive.google.com/file/d/1c2EVLKVDiK1YDeWxHIqrcG3y0AgcyM0I/view",
+      "targetQuery": "*[_type=='caseStudy' && slug.current=='qikserve-kiosk'][0]._id",
+      "field": "heroMedia",
+      "alt": "QikServe kiosk ordering interface on a portrait self-service screen"
+    },
+    {
+      "filename": "kiosk-basket-cross-sell.jpg",
+      "driveTitle": "Kiosk Basket with cross sell.jpg",
+      "viewUrl": "https://drive.google.com/file/d/13oxCubfoQL25ErGUvATIDk7SMTrIYfjx/view",
+      "targetQuery": "*[_type=='caseStudy' && slug.current=='qikserve-online-ordering'][0]._id",
+      "field": "heroMedia",
+      "alt": "Basket view with configurable cross-sell prompts in the ordering flow"
+    },
+    {
+      "filename": "kiosk-ui.jpg",
+      "driveTitle": "Kiosk UI.jpg",
+      "viewUrl": "https://drive.google.com/file/d/1U9F7Bl-UtCU58rme2mTh6TdFZyGUoS_g/view",
+      "targetQuery": "*[_type=='caseStudy' && slug.current=='qikserve-kiosk'][0]._id",
+      "field": "gallery",
+      "alt": "Kiosk menu interface showing category navigation and item cards"
+    },
+    {
+      "filename": "kiosk-mockup.png",
+      "driveTitle": "Kiosk mockup.png",
+      "viewUrl": "https://drive.google.com/file/d/1PzriWCrxUowVMpbP5VLU8SddMosGv-4W/view",
+      "targetQuery": "*[_type=='caseStudy' && slug.current=='access-kiosk-pocket'][0]._id",
+      "field": "heroMedia",
+      "alt": "Kiosk interface mockup in situ"
+    },
+    {
+      "filename": "kiosk-mockup-2.png",
+      "driveTitle": "Kiosk mockup 2.png",
+      "viewUrl": "https://drive.google.com/file/d/1gtxphVtN_9b-lpFCqQ0DIkczcpXgvzdu/view",
+      "targetQuery": "*[_type=='caseStudy' && slug.current=='gdk-kiosk-go-live'][0]._id",
+      "field": "heroMedia",
+      "alt": "Self-service kiosk in a quick-service restaurant setting"
+    },
+    {
+      "filename": "kiosk-screens.png",
+      "driveTitle": "Kiosk Screens.png",
+      "viewUrl": "https://drive.google.com/file/d/1hBFjXtkAYEnyPJ9V1kpWM2P9smNRAADz/view",
+      "targetQuery": "*[_type=='caseStudy' && slug.current=='qikserve-kiosk'][0]._id",
+      "field": "gallery",
+      "alt": "Sequence of kiosk screens across the guest ordering journey"
+    },
+    {
+      "filename": "kiosk-dark.png",
+      "driveTitle": "Kiosk dark.png",
+      "viewUrl": "https://drive.google.com/file/d/1ihtqN0x4uOYp6HPG6-3hAwdic7xsYCtw/view",
+      "targetQuery": "*[_type=='caseStudy' && slug.current=='access-evoguest'][0]._id",
+      "field": "heroMedia",
+      "alt": "Dark-themed kiosk interface demonstrating brand theming range"
+    },
+    {
+      "filename": "profile.jpg",
+      "driveTitle": "IMG_4045.jpg (Portfolio > Profile Images)",
+      "viewUrl": "https://drive.google.com/file/d/1h5OcwXx4zA-XHiD4eLG7Tnv5nwVCBJMH/view",
+      "targetQuery": null,
+      "field": null,
+      "alt": "Richard Murphy",
+      "note": "siteSettings has no image field; kept here in case the about page wants it later"
+    }
+  ],
+  "notes": [
+    "BK Kiosk.png and kfc kiosk.png exist in Drive but show named brands; left out pending permission.",
+    "No Orson, Strunk, Brotique, Optify, Hudson & Armitage, Realise or Evo imagery found in searchable Drive folders; several Drive folders from the April migration appear empty shells. Heroes for those need exports from you.",
+    "Brand demo food imagery (PineappleJalapenoSalsa_Kiosk.png etc.) available in Drive if you want richer kiosk gallery shots."
+  ]
+}
