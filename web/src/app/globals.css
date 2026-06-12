@@ -21,6 +21,12 @@
   --color-rust: #b5723a;
   --color-rust-deep: #9a5a28;
 
+  /* Soft warm off-white for type/surfaces on the smalt field. Overrides the
+     default pure #fff so every text-white / bg-white / border-white softens at
+     once, cutting glare on the saturated blue while staying clearly "white".
+     ~7:1 contrast on smalt, so full-opacity text still passes WCAG AA. */
+  --color-white: #f1efe9;
+
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
   --font-display: var(--font-fraunces), Georgia, serif;
@@ -59,7 +65,7 @@ body {
   top: -48px;
   z-index: 200;
   background: var(--color-smalt);
-  color: #fff;
+  color: var(--color-white);
   padding: 9px 14px;
   border-radius: 6px;
   font-family: var(--font-mono);

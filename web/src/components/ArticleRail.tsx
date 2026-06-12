@@ -59,14 +59,14 @@ export function ArticleRail({
         className="mt-auto flex justify-between border-t border-smalt-line pt-4 font-mono text-xs"
       >
         {prev?.slug ? (
-          <Link href={`/work/${prev.slug}`} className="text-white/90 hover:text-white">
+          <Link href={`/work/${prev.slug}`} className="text-white/90 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
             ← {prev.title}
           </Link>
         ) : (
           <span aria-hidden="true" />
         )}
         {next?.slug ? (
-          <Link href={`/work/${next.slug}`} className="text-white/90 hover:text-white">
+          <Link href={`/work/${next.slug}`} className="text-white/90 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
             {next.title} →
           </Link>
         ) : (

@@ -34,8 +34,24 @@ export default async function MusingPage({params}: Params) {
   const musing = await client.fetch(MUSING_QUERY, {slug})
   if (!musing) notFound()
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
   return (
     <article className="bg-cream">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: musing.title,
+            description: musing.excerpt ?? undefined,
+            url: `${siteUrl}/musings/${slug}`,
+            datePublished: musing.publishedAt ?? undefined,
+            author: {'@id': `${siteUrl}/#richard`},
+          }),
+        }}
+      />
       <div className="canvas-rise mx-auto max-w-[680px] px-8 py-16 sm:py-24">
         <Link
           href="/musings"

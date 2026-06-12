@@ -92,8 +92,26 @@ export default async function WorkPage({params}: Params) {
     note: m.note,
   }))
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
   return (
     <article className="grid grid-cols-1 md:grid-cols-[minmax(280px,30%)_1fr]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CreativeWork',
+            name: work.title,
+            description: lede ?? undefined,
+            url: `${siteUrl}/work/${slug}`,
+            creator: {'@id': `${siteUrl}/#richard`},
+            about: work.sector ?? undefined,
+            dateCreated: work.year ? String(work.year) : undefined,
+            keywords: work.tags?.join(', ') || undefined,
+          }),
+        }}
+      />
       <ArticleRail
         index={idx >= 0 ? idx : 0}
         title={work.title ?? 'Untitled'}

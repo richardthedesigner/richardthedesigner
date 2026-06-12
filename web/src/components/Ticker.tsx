@@ -10,15 +10,13 @@ export function Ticker({items}: Props) {
   const run = [...items, ...items]
 
   return (
-    <footer
-      className="overflow-hidden border-t border-line bg-paper py-2.5"
-      aria-label="Site information"
-    >
-      <div className="ticker-run font-mono text-[11.5px] text-soft" aria-hidden="true">
+    // Purely decorative strip (the real footer is SiteFooter); hidden from the tree.
+    <div className="overflow-hidden border-t border-line bg-paper py-2.5" aria-hidden="true">
+      <div className="ticker-run font-mono text-[11.5px] text-soft">
         {run.map((item, i) => (
           <span key={i}>{item}</span>
         ))}
       </div>
-    </footer>
+    </div>
   )
 }

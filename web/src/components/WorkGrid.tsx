@@ -67,7 +67,12 @@ export function WorkGrid({
           Richard Murphy — Product Design &amp; Platform Strategy
         </p>
 
-        <h1 className="mt-8 text-[clamp(22px,2.3vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em]">
+        <h1 className="sr-only">Work — Richard Murphy, product designer</h1>
+        <p
+          role="group"
+          aria-label="Filter the work by theme"
+          className="mt-8 text-[clamp(22px,2.3vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em]"
+        >
           <span className="text-white/90">How I </span>
           <FilterWord
             active={filter === 'all'}
@@ -89,7 +94,7 @@ export function WorkGrid({
             </span>
           ))}
           <span className="text-white/90">.</span>
-        </h1>
+        </p>
 
         {/* Preview / intro blurb (text only; the image lives in the backdrop) */}
         <div className="relative mt-6 flex-1">
@@ -126,11 +131,11 @@ export function WorkGrid({
             {work.length === 1 ? 'piece' : 'pieces'}
           </p>
           <nav aria-label="Site" className="font-mono text-[11px]">
-            <Link href="/musings" className="py-1 text-white/80 transition-colors hover:text-white">
+            <Link href="/musings" className="py-1 text-white/90 transition-colors hover:text-white">
               Musings
             </Link>
             <span aria-hidden="true" className="px-1.5 text-white/50">/</span>
-            <Link href="/info" className="py-1 text-white/80 transition-colors hover:text-white">
+            <Link href="/info" className="py-1 text-white/90 transition-colors hover:text-white">
               Info
             </Link>
           </nav>
@@ -173,8 +178,8 @@ function FilterWord({
       aria-pressed={active}
       className={
         active
-          ? 'inline-block rounded-md bg-white px-2.5 py-1 text-smalt'
-          : 'inline-block cursor-pointer whitespace-nowrap border-b-2 border-white/30 py-1 text-white transition-colors hover:border-white'
+          ? 'inline-block rounded-md bg-white px-2.5 py-1 text-smalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+          : 'inline-block cursor-pointer whitespace-nowrap border-b-2 border-white/30 py-1 text-white transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
       }
     >
       {children}

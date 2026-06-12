@@ -68,6 +68,35 @@ export default async function RootLayout({
       className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'Person',
+                  '@id': `${SITE_URL}/#richard`,
+                  name: 'Richard Murphy',
+                  jobTitle: 'Product Designer & Design Leader',
+                  description:
+                    'Product design and platform strategy. Formerly Head of Product Design at QikServe and Access Group; founder of Orson, an AI-native venture.',
+                  email: settings?.contactEmail
+                    ? `mailto:${settings.contactEmail}`
+                    : undefined,
+                  address: {'@type': 'PostalAddress', addressLocality: 'Edinburgh', addressCountry: 'GB'},
+                  url: SITE_URL,
+                },
+                {
+                  '@type': 'WebSite',
+                  url: SITE_URL,
+                  name: 'Richard Murphy — Product Design & Platform Strategy',
+                  publisher: {'@id': `${SITE_URL}/#richard`},
+                },
+              ],
+            }),
+          }}
+        />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
