@@ -31,7 +31,7 @@ const linkMark: PortableTextComponents['marks'] = {
     return (
       <a
         href={href}
-        className="text-smalt underline decoration-from-font underline-offset-2 hover:text-smalt-deep"
+        className="text-smalt-deep underline decoration-from-font underline-offset-2 hover:text-smalt"
         {...(external ? {target: '_blank', rel: 'noopener noreferrer'} : {})}
       >
         {children}
@@ -45,7 +45,7 @@ const articleComponents: PortableTextComponents = {
   marks: linkMark,
   block: {
     normal: ({children}) => (
-      <p className="mb-5 max-w-[60ch] text-[17px] leading-[1.7] text-[#26272E]">
+      <p className="mb-5 max-w-[60ch] text-[17px] leading-[1.7] text-ink">
         {children}
       </p>
     ),
@@ -60,19 +60,19 @@ const articleComponents: PortableTextComponents = {
       </h3>
     ),
     blockquote: ({children}) => (
-      <blockquote className="my-8 max-w-[20ch] text-[clamp(22px,2.6vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em] text-smalt">
+      <blockquote className="my-8 max-w-[20ch] text-[clamp(22px,2.6vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em] text-smalt-deep">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({children}) => (
-      <ul className="mb-5 max-w-[60ch] list-disc space-y-2 pl-5 text-[17px] leading-[1.6] text-[#26272E]">
+      <ul className="mb-5 max-w-[60ch] list-disc space-y-2 pl-5 text-[17px] leading-[1.6] text-ink">
         {children}
       </ul>
     ),
     number: ({children}) => (
-      <ol className="mb-5 max-w-[60ch] list-decimal space-y-2 pl-5 text-[17px] leading-[1.6] text-[#26272E]">
+      <ol className="mb-5 max-w-[60ch] list-decimal space-y-2 pl-5 text-[17px] leading-[1.6] text-ink">
         {children}
       </ol>
     ),
@@ -99,7 +99,7 @@ const museComponents: PortableTextComponents = {
       </h3>
     ),
     blockquote: ({children}) => (
-      <p className="my-8 text-center font-display text-[clamp(24px,2.6vw,32px)] font-medium leading-[1.3] text-rust-deep">
+      <p className="mx-auto my-8 max-w-[26ch] text-center font-display text-[clamp(24px,2.6vw,32px)] font-medium leading-[1.3] text-rust-deep">
         {children}
       </p>
     ),

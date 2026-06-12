@@ -5,6 +5,7 @@ import {client} from '@/sanity/client'
 import {urlForImage} from '@/sanity/image'
 import {WORK_QUERY, WORK_ORDER_QUERY, WORK_SLUGS_QUERY} from '@/sanity/queries'
 import {kindLabel} from '@/lib/tags'
+import {fallbackFor} from '@/lib/fallbackImages'
 import {ArticleRail} from '@/components/ArticleRail'
 import {Media} from '@/components/Media'
 import {Metrics} from '@/components/Metrics'
@@ -31,7 +32,7 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
   const ogSource = work.heroMedia?.image ?? work.heroMedia?.poster
   const ogImage = ogSource
     ? urlForImage(ogSource).width(1200).height(630).fit('crop').url()
-    : undefined
+    : fallbackFor(slug)?.url
 
   return {
     title: work.title,
@@ -82,18 +83,18 @@ export default async function WorkPage({params}: Params) {
 
       <div className="canvas-rise min-w-0">
         {/* Hero */}
-        <header className="relative h-[56vh] min-h-[380px] overflow-hidden bg-smalt-deep">
-          {work.heroMedia ? (
-            <div className="hero-zoom absolute inset-0 opacity-50">
-              <Media
-                media={work.heroMedia}
-                fill
-                width={1600}
-                priority
-                sizes="70vw"
-              />
-            </div>
-          ) : null}
+        <header className="relative h-[56vh] max-h-[640px] min-h-[380px] overflow-hidden bg-smalt-deep">
+          {(() => {
+            const fb = fallbackFor(slug)
+            const heroMedia =
+              work.heroMedia ??
+              (fb ? {kind: 'image' as const, alt: fb.alt, externalUrl: fb.url} : null)
+            return heroMedia ? (
+              <div className="hero-zoom absolute inset-0 opacity-50">
+                <Media media={heroMedia} fill width={1600} priority sizes="70vw" />
+              </div>
+            ) : null
+          })()}
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-br from-smalt/55 to-[#0a1446]/80"

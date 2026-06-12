@@ -25,7 +25,7 @@ export default async function InfoPage() {
       </h1>
 
       {settings?.intro ? (
-        <p className="mt-6 max-w-[56ch] text-[clamp(17px,1.8vw,21px)] leading-[1.55] text-[#2b2c33]">
+        <p className="mt-6 max-w-[56ch] text-[clamp(17px,1.8vw,21px)] leading-[1.55] text-ink">
           {settings.intro}
         </p>
       ) : null}
@@ -39,7 +39,7 @@ export default async function InfoPage() {
             <dd className="mt-2">
               <a
                 href={`mailto:${settings.contactEmail}`}
-                className="text-[17px] text-smalt underline decoration-from-font underline-offset-2 hover:text-smalt-deep"
+                className="text-[17px] text-smalt-deep underline decoration-from-font underline-offset-2 hover:text-smalt"
               >
                 {settings.contactEmail}
               </a>
@@ -71,7 +71,7 @@ export default async function InfoPage() {
                       href={s.url ?? '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[17px] text-smalt underline decoration-from-font underline-offset-2 hover:text-smalt-deep"
+                      className="text-[17px] text-smalt-deep underline decoration-from-font underline-offset-2 hover:text-smalt"
                     >
                       {s.label || s.url}
                     </a>

@@ -39,7 +39,7 @@ export default async function MusingsPage() {
             <li key={m._id} className="border-b border-line">
               <Link
                 href={`/musings/${m.slug}`}
-                className="group flex flex-col gap-1.5 py-7 transition-[padding] hover:pl-2"
+                className="group flex flex-col gap-1.5 py-7 transition-[padding] hover:pl-2 focus-visible:pl-2"
               >
                 <div className="flex items-baseline justify-between gap-4">
                   <h2 className="font-display text-[clamp(22px,2.6vw,30px)] font-medium tracking-[-0.01em] group-hover:text-smalt">

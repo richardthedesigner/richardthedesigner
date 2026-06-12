@@ -148,7 +148,7 @@ body {
   font-size: 4.2em;
   line-height: 0.78;
   padding: 8px 12px 0 0;
-  color: var(--color-rust);
+  color: var(--color-rust-deep);
 }
 
 /* ===========================================================================
@@ -180,6 +180,7 @@ body {
     animation: none !important;
   }
   .cell-media {
-    transition: opacity 0.001ms !important;
+    transition: none !important;
+    transform: none !important;
   }
 }

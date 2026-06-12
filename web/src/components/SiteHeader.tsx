@@ -12,7 +12,7 @@ type Props = {
 
 export function SiteHeader({title}: Props) {
   return (
-    <header className="sticky top-0 z-[90] flex items-center gap-6 border-b border-line bg-paper/90 px-5 py-2.5 backdrop-blur-md">
+    <header className="sticky top-0 z-[90] flex items-center gap-6 border-b border-line bg-paper/90 px-5 py-3 backdrop-blur-md">
       <Link
         href="/"
         className="text-[15px] font-bold tracking-[-0.01em] text-ink"
@@ -23,7 +23,7 @@ export function SiteHeader({title}: Props) {
         <ul className="flex gap-5 font-mono text-xs text-soft">
           {NAV.map((item) => (
             <li key={item.href}>
-              <Link href={item.href} className="transition-colors hover:text-smalt">
+              <Link href={item.href} className="inline-block py-2 transition-colors hover:text-smalt">
                 {item.label}
               </Link>
             </li>

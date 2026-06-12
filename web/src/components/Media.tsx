@@ -13,6 +13,8 @@ export type MediaLike = {
   poster?: SanityImageSource | null
   videoUrl?: string | null
   lqip?: string | null
+  /** Plain remote image URL (e.g. Unsplash fallback) used when no Sanity asset exists. */
+  externalUrl?: string | null
 }
 
 type Props = {
@@ -55,7 +57,12 @@ export function Media({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={posterUrl} alt={alt} className={base} loading="lazy" decoding="async" />
       ) : (
-        <span className={base} role="img" aria-label={alt} />
+        <span
+          className={base}
+          role="img"
+          aria-label={alt}
+          style={{backgroundColor: 'var(--color-paper-2)'}}
+        />
       )
     }
 
@@ -72,6 +79,22 @@ export function Media({
       >
         <source src={media.videoUrl} type="video/mp4" />
       </video>
+    )
+  }
+
+  // External fallback image (no Sanity asset)
+  if (!media.image && media.externalUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={media.externalUrl}
+        sizes={sizes}
+        alt={alt}
+        className={base}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
+        decoding="async"
+      />
     )
   }
 

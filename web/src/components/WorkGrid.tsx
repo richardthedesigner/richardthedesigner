@@ -5,7 +5,14 @@ import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
 import {STORY_TAGS, kindLabel, num} from '@/lib/tags'
-import {Media} from '@/components/Media'
+import {fallbackFor} from '@/lib/fallbackImages'
+import {Media, type MediaLike} from '@/components/Media'
+
+function cardMedia(work: WorkCard): MediaLike | null {
+  if (work.heroMedia) return work.heroMedia
+  const fb = fallbackFor(work.slug)
+  return fb ? {kind: 'image', alt: fb.alt, externalUrl: fb.url} : null
+}
 
 type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number]
 
@@ -62,11 +69,11 @@ export function WorkGrid({
 
         {/* Preview / intro blurb */}
         <div className="relative mt-6 flex-1">
-          {preview?.heroMedia ? (
+          {preview && cardMedia(preview) ? (
             <div className="absolute inset-x-0 bottom-0">
               <div className="relative aspect-[4/3] overflow-hidden rounded-md">
                 <Media
-                  media={preview.heroMedia}
+                  media={cardMedia(preview)}
                   fill
                   width={700}
                   sizes="(max-width: 768px) 100vw, 36vw"
@@ -100,7 +107,7 @@ export function WorkGrid({
       </aside>
 
       {/* ---- Grid ---- */}
-      <section aria-label="Selected work" className="grid grid-cols-2 auto-rows-[minmax(180px,1fr)] lg:grid-cols-3">
+      <section aria-label="Selected work" className="grid grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
         {work.map((w, i) => {
           const match = filter === 'all' || (w.tags ?? []).includes(filter)
           return (
@@ -135,8 +142,8 @@ function FilterWord({
       aria-pressed={active}
       className={
         active
-          ? 'rounded-md bg-white px-2 text-smalt'
-          : 'cursor-pointer whitespace-nowrap border-b-2 border-white/30 text-white transition-colors hover:border-white'
+          ? 'inline-block rounded-md bg-white px-2.5 py-1 text-smalt'
+          : 'inline-block cursor-pointer whitespace-nowrap border-b-2 border-white/30 py-1 text-white transition-colors hover:border-white'
       }
     >
       {children}
@@ -166,14 +173,14 @@ function WorkCellLink({
       onMouseLeave={onClearPreview}
       onFocus={onPreview}
       onBlur={onClearPreview}
-      className={`cell group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,color] hover:text-white focus-within:text-white ${
+      className={`cell group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,color] hover:text-white focus-within:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
         dimmed ? 'pointer-events-none opacity-30' : 'opacity-100'
       }`}
     >
-      {work.heroMedia ? (
+      {cardMedia(work) ? (
         <div className="cell-media pointer-events-none absolute inset-0">
           <Media
-            media={work.heroMedia}
+            media={cardMedia(work)}
             fill
             width={600}
             sizes="(max-width: 1024px) 50vw, 33vw"
