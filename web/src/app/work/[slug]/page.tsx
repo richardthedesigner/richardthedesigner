@@ -114,6 +114,27 @@ export default async function WorkPage({params}: Params) {
           </div>
         </header>
 
+        {/* Fact sheet */}
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-5 border-b border-line px-6 py-7 sm:grid-cols-4 sm:px-11">
+          {[
+            ['Client', work.client],
+            ['Role', work.role],
+            ['Timeframe', work.timeframe ?? (work.year ? String(work.year) : null)],
+            ['Sector', work.sector],
+          ]
+            .filter(([, v]) => v)
+            .map(([k, v]) => (
+              <div key={k}>
+                <dt className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-soft">
+                  {k}
+                </dt>
+                <dd className="mt-1.5 text-[14.5px] font-medium leading-snug text-ink">
+                  {v}
+                </dd>
+              </div>
+            ))}
+        </dl>
+
         {/* Proof points */}
         {metrics.length ? (
           <Reveal>

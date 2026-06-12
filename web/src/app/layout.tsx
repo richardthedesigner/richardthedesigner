@@ -71,7 +71,7 @@ export default async function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        <SiteHeader title={settings?.title} />
+        <SiteHeader title={settings?.title} contactEmail={settings?.contactEmail} />
         <main id="main-content" className="flex flex-1 flex-col">
           {children}
         </main>

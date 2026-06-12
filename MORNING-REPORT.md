@@ -1,5 +1,16 @@
 # Morning report — richardthedesigner.com overnight build
 
+## Addendum (after your morning feedback)
+
+- **Much more content.** All 10 case studies/major projects roughly tripled (kiosk now ~1,100 words). Every piece has a distinct section skeleton (no more Context/Problem/Solution everywhere), pull quotes, bullet lists, and a human closer ("What I'd do differently" etc.).
+- **Team credited everywhere.** Every case study now has a prominent "Team and credits" section with a credit list: the UK/Brazil design team (1→5), platform engineering, PM, customer success, the operators. I have no individual names, so credits are by team/role — **send me names and I'll slot them in within minutes.**
+- **8 new projects from Drive evidence** (now 32 pieces, 27 on the grid): QikServe Payments, Open Check, Pay at Table, Draper & Dow, Coutts & Murphy, Quarters, Tiger Forest, The Brotique Stores. The 8 thin one-liner pages were also expanded to proper short reads.
+- **Work pages restructured:** new fact sheet strip under the hero (Client / Role / Timeframe / Sector).
+- **Header reworked:** identity + strapline left, Edinburgh local-time stamp, nav, and a "Get in touch" mail CTA right. Type-check and lint clean.
+- New fallback hero images mapped for all 8 new slugs.
+
+---
+
 **Bottom line:** the CMS is fully populated and live (23 pieces, all published), every grid cell and case-study hero has imagery, three independent reviewers audited the work, their fixes are applied, and the frontend passes type-check and lint. Two things need your hands: run the image import command, and skim the flagged liberties below.
 
 ---

@@ -85,6 +85,38 @@ export const FALLBACK_IMAGES: Record<string, FallbackImage> = {
     url: u('photo-1436918898788-ebce04d38e46'),
     alt: 'Vintage numbered type sorts',
   },
+  'qikserve-payments': {
+    url: u('photo-1609427955204-d0a737cb2c1a'),
+    alt: 'Contactless card payment at a terminal',
+  },
+  'open-check': {
+    url: u('photo-1564758596151-c17d1590f483'),
+    alt: 'Restaurant table mid-service',
+  },
+  'pay-at-table': {
+    url: u('photo-1568031814106-ac1b1cc12b71'),
+    alt: 'Paying the bill from a phone at the table',
+  },
+  'draper-and-dow': {
+    url: u('photo-1610454059909-f9a5a6eb4e58'),
+    alt: 'Letterpress type detail',
+  },
+  'coutts-and-murphy': {
+    url: u('photo-1603204254626-d0de8eb24cf1'),
+    alt: 'Composed metal type on a press bed',
+  },
+  quarters: {
+    url: u('photo-1497366616365-e78dd380d3dd'),
+    alt: 'Considered retail interior',
+  },
+  'tiger-forest': {
+    url: u('photo-1741513542259-e9cc5cb9bb2e'),
+    alt: 'Abstract layered forms',
+  },
+  'brotique-stores': {
+    url: u('photo-1709531766566-7e26b3ea582d'),
+    alt: 'Stone-fronted shops on an Edinburgh street',
+  },
 }
 
 export function fallbackFor(slug: string | null | undefined): FallbackImage | null {
