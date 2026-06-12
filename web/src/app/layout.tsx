@@ -3,7 +3,7 @@ import {Fraunces, IBM_Plex_Sans, IBM_Plex_Mono} from 'next/font/google'
 
 import {client} from '@/sanity/client'
 import {LAYOUT_QUERY} from '@/sanity/queries'
-import {SiteHeader} from '@/components/SiteHeader'
+import {SiteFooter} from '@/components/SiteFooter'
 import {Ticker} from '@/components/Ticker'
 import './globals.css'
 
@@ -71,10 +71,10 @@ export default async function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        <SiteHeader title={settings?.title} contactEmail={settings?.contactEmail} />
         <main id="main-content" className="flex flex-1 flex-col">
           {children}
         </main>
+        <SiteFooter />
         <Ticker items={tickerItems} />
       </body>
     </html>

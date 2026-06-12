@@ -24,6 +24,7 @@ export const HOME_QUERY = defineQuery(`{
       _type == "caseStudy" => coalesce(sector, client, role),
       coalesce(client, description)
     ),
+    "summary": coalesce(standfirst, description),
     heroMedia{
       kind,
       alt,
@@ -49,6 +50,7 @@ export const HOME_QUERY = defineQuery(`{
       _type == "caseStudy" => coalesce(sector, client, role),
       coalesce(client, description)
     ),
+    "summary": coalesce(standfirst, description),
     heroMedia{
       kind,
       alt,

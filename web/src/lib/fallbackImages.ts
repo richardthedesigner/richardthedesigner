@@ -123,3 +123,100 @@ export function fallbackFor(slug: string | null | undefined): FallbackImage | nu
   if (!slug) return null
   return FALLBACK_IMAGES[slug] ?? null
 }
+
+// ---------------------------------------------------------------------------
+// Filler galleries: themed pools so detail pages aren't walls of text while
+// real artefacts are gathered. Replaced automatically once a document has a
+// real `gallery` in Sanity.
+// ---------------------------------------------------------------------------
+
+type Theme = 'kiosk' | 'ordering' | 'ai' | 'print' | 'retail' | 'office' | 'cinema' | 'edinburgh' | 'abstract'
+
+const POOLS: Record<Theme, [string, string][]> = {
+  kiosk: [
+    ['photo-1771589485221-4440612ada2e', 'Self-service screen in use'],
+    ['photo-1777678930403-3d87fad8fd60', 'Ordering interface detail'],
+    ['photo-1777679883845-6e1b732e2063', 'Guest interacting with a kiosk'],
+  ],
+  ordering: [
+    ['photo-1601972602288-3be527b4f18a', 'Contactless payment moment'],
+    ['photo-1564758596151-c17d1590f483', 'Table mid-service'],
+    ['photo-1568031814106-ac1b1cc12b71', 'Settling up from a phone'],
+  ],
+  ai: [
+    ['photo-1674027444485-cec3da58eef4', 'Abstract machine-intelligence forms'],
+    ['photo-1727434032773-af3cd98375ba', 'Light structure suggesting computation'],
+    ['photo-1695144244472-a4543101ef35', 'Generated pattern detail'],
+  ],
+  print: [
+    ['photo-1581080247486-57989c1f14ab', 'Type detail under the loupe'],
+    ['photo-1515325915697-9279b4f7effc', 'Press furniture and sorts'],
+    ['photo-1535054820380-92c41678b087', 'Ink on paper texture'],
+  ],
+  retail: [
+    ['photo-1678356164573-9a534fe43958', 'Shop interior detail'],
+    ['photo-1519500528352-2d1460418d41', 'Counter and product display'],
+    ['photo-1514336937476-a5b961020a5c', 'Considered shelving'],
+  ],
+  office: [
+    ['photo-1520032525096-7bd04a94b5a4', 'Workplace interior'],
+    ['photo-1616386261012-8a328c89d5b6', 'Meeting space detail'],
+    ['photo-1643267514395-b36b3f7e8281', 'Brand applied to space'],
+  ],
+  cinema: [
+    ['photo-1760170437237-a3654545ab4c', 'Auditorium light'],
+    ['photo-1758839295128-b04f48b1b08c', 'Screen room detail'],
+    ['photo-1722321974528-ec8eaf725777', 'Foyer atmosphere'],
+  ],
+  edinburgh: [
+    ['photo-1691201200746-9a95b64a3436', 'Edinburgh stone and light'],
+    ['photo-1578770701978-0b6bfec6e492', 'Street elevation detail'],
+    ['photo-1698129781654-70aaa1cdaf6a', 'City texture'],
+  ],
+  abstract: [
+    ['photo-1493397212122-2b85dda8106b', 'Repeating structural rhythm'],
+    ['photo-1524351543168-8e38787614e9', 'Converging planes'],
+    ['photo-1770816305998-57eec25ac2d5', 'Minimal geometry'],
+  ],
+}
+
+const SLUG_THEMES: Record<string, Theme> = {
+  'qikserve-kiosk': 'kiosk',
+  'qikserve-online-ordering': 'ordering',
+  'access-evo': 'abstract',
+  orson: 'ai',
+  'the-brotique': 'retail',
+  strunk: 'print',
+  'access-evoguest': 'kiosk',
+  'prepay-qikserve': 'abstract',
+  quoin: 'office',
+  'gdk-kiosk-go-live': 'kiosk',
+  'access-kiosk-pocket': 'ordering',
+  'hudson-and-armitage': 'print',
+  optify: 'abstract',
+  'realise-offices': 'office',
+  causewayside: 'edinburgh',
+  iamhere: 'abstract',
+  flymynight: 'cinema',
+  'cinema-design': 'cinema',
+  'project-50': 'print',
+  'qikserve-payments': 'ordering',
+  'open-check': 'ordering',
+  'pay-at-table': 'ordering',
+  'draper-and-dow': 'print',
+  'coutts-and-murphy': 'print',
+  quarters: 'retail',
+  'tiger-forest': 'abstract',
+  'brotique-stores': 'edinburgh',
+}
+
+export function fallbackGalleryFor(slug: string | null | undefined): FallbackImage[] {
+  if (!slug) return []
+  const theme = SLUG_THEMES[slug]
+  if (!theme) return []
+  const hero = FALLBACK_IMAGES[slug]?.url
+  return POOLS[theme]
+    .map(([id, alt]) => ({url: u(id), alt}))
+    .filter((img) => img.url !== hero)
+    .slice(0, 3)
+}

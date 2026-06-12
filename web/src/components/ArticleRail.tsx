@@ -20,7 +20,7 @@ export function ArticleRail({
   next: NavItem
 }) {
   return (
-    <aside className="flex flex-col bg-smalt p-7 text-white md:sticky md:top-[49px] md:h-[calc(100vh-49px)]">
+    <aside className="flex flex-col bg-smalt p-7 text-white md:sticky md:top-0 md:h-screen">
       <Link
         href="/"
         className="self-start border-b border-white/40 font-mono text-xs text-white hover:border-white"

@@ -299,7 +299,7 @@ export type AllSanitySchemaTypes = ContentBody | Metric | MediaItem | SiteSettin
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/sanity/queries.ts
 // Variable: HOME_QUERY
-// Query: {  "settings": *[_id == "siteSettings"][0]{    title,    intro  },  "ordered": *[_id == "siteSettings"][0].gridOrder[]->{    _id,    _type,    title,    "slug": slug.current,    tags,    client,    year,    "subtitle": select(      _type == "caseStudy" => coalesce(sector, client, role),      coalesce(client, description)    ),    heroMedia{      kind,      alt,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  },  "extra": *[    (_type == "caseStudy" || _type == "project")    && defined(slug.current)    && !(_id in *[_id == "siteSettings"][0].gridOrder[]._ref)  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){    _id,    _type,    title,    "slug": slug.current,    tags,    client,    year,    "subtitle": select(      _type == "caseStudy" => coalesce(sector, client, role),      coalesce(client, description)    ),    heroMedia{      kind,      alt,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  }}
+// Query: {  "settings": *[_id == "siteSettings"][0]{    title,    intro  },  "ordered": *[_id == "siteSettings"][0].gridOrder[]->{    _id,    _type,    title,    "slug": slug.current,    tags,    client,    year,    "subtitle": select(      _type == "caseStudy" => coalesce(sector, client, role),      coalesce(client, description)    ),    "summary": coalesce(standfirst, description),    heroMedia{      kind,      alt,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  },  "extra": *[    (_type == "caseStudy" || _type == "project")    && defined(slug.current)    && !(_id in *[_id == "siteSettings"][0].gridOrder[]._ref)  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){    _id,    _type,    title,    "slug": slug.current,    tags,    client,    year,    "subtitle": select(      _type == "caseStudy" => coalesce(sector, client, role),      coalesce(client, description)    ),    "summary": coalesce(standfirst, description),    heroMedia{      kind,      alt,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  }}
 export type HOME_QUERYResult = {
   settings: {
     title: string;
@@ -320,6 +320,7 @@ export type HOME_QUERYResult = {
     client: string | null;
     year: number | null;
     subtitle: string | null;
+    summary: string | null;
     heroMedia: {
       kind: "image" | "video";
       alt: string;
@@ -359,6 +360,7 @@ export type HOME_QUERYResult = {
     client: string | null;
     year: number | null;
     subtitle: string | null;
+    summary: string | null;
     heroMedia: {
       kind: "image" | "video";
       alt: string;
@@ -399,6 +401,7 @@ export type HOME_QUERYResult = {
     client: string | null;
     year: number | null;
     subtitle: string | null;
+    summary: string | null;
     heroMedia: {
       kind: "image" | "video";
       alt: string;
@@ -438,6 +441,7 @@ export type HOME_QUERYResult = {
     client: string | null;
     year: number | null;
     subtitle: string | null;
+    summary: string | null;
     heroMedia: {
       kind: "image" | "video";
       alt: string;
@@ -909,7 +913,7 @@ export type LAYOUT_QUERYResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "{\n  \"settings\": *[_id == \"siteSettings\"][0]{\n    title,\n    intro\n  },\n  \"ordered\": *[_id == \"siteSettings\"][0].gridOrder[]->{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  },\n  \"extra\": *[\n    (_type == \"caseStudy\" || _type == \"project\")\n    && defined(slug.current)\n    && !(_id in *[_id == \"siteSettings\"][0].gridOrder[]._ref)\n  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n}": HOME_QUERYResult;
+    "{\n  \"settings\": *[_id == \"siteSettings\"][0]{\n    title,\n    intro\n  },\n  \"ordered\": *[_id == \"siteSettings\"][0].gridOrder[]->{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    \"summary\": coalesce(standfirst, description),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  },\n  \"extra\": *[\n    (_type == \"caseStudy\" || _type == \"project\")\n    && defined(slug.current)\n    && !(_id in *[_id == \"siteSettings\"][0].gridOrder[]._ref)\n  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    \"summary\": coalesce(standfirst, description),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n}": HOME_QUERYResult;
     "{\n  \"ordered\": *[_id == \"siteSettings\"][0].gridOrder[]->{\n    _type,\n    title,\n    \"slug\": slug.current\n  },\n  \"extra\": *[\n    (_type == \"caseStudy\" || _type == \"project\")\n    && defined(slug.current)\n    && !(_id in *[_id == \"siteSettings\"][0].gridOrder[]._ref)\n  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){\n    _type,\n    title,\n    \"slug\": slug.current\n  }\n}": WORK_ORDER_QUERYResult;
     "\n  *[(_type == \"caseStudy\" || _type == \"project\") && defined(slug.current)]{\n    \"slug\": slug.current\n  }\n": WORK_SLUGS_QUERYResult;
     "\n  *[(_type == \"caseStudy\" || _type == \"project\") && slug.current == $slug][0]{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    standfirst,\n    description,\n    client,\n    role,\n    sector,\n    timeframe,\n    year,\n    tags,\n    heroMedia{\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    },\n    metrics[]{\n      _key,\n      value,\n      label,\n      note\n    },\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    },\n    gallery[]{\n      _key,\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n": WORK_QUERYResult;

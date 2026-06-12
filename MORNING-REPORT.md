@@ -6,7 +6,9 @@
 - **Team credited everywhere.** Every case study now has a prominent "Team and credits" section with a credit list: the UK/Brazil design team (1→5), platform engineering, PM, customer success, the operators. I have no individual names, so credits are by team/role — **send me names and I'll slot them in within minutes.**
 - **8 new projects from Drive evidence** (now 32 pieces, 27 on the grid): QikServe Payments, Open Check, Pay at Table, Draper & Dow, Coutts & Murphy, Quarters, Tiger Forest, The Brotique Stores. The 8 thin one-liner pages were also expanded to proper short reads.
 - **Work pages restructured:** new fact sheet strip under the hero (Client / Role / Timeframe / Sector).
-- **Header reworked:** identity + strapline left, Edinburgh local-time stamp, nav, and a "Get in touch" mail CTA right. Type-check and lint clean.
+- **Header removed entirely** (round 2 of feedback): your bio + a large mailto + nav + Edinburgh clock now live in a smalt site footer above the ticker; home masthead carries Musings/Info links; article rail keeps "← Index". `SiteHeader.tsx`/`LocalTime.tsx` remain in the repo (footer uses LocalTime).
+- **Masthead grammar fixed:** "How I work / operate / build / design / transform / craft."
+- **Work pages now have three deterministic layout variants** (panorama hero, split editorial, poster typographic) chosen per slug, plus filler galleries (2-3 themed images per page) that real artefacts automatically replace.
 - New fallback hero images mapped for all 8 new slugs.
 
 ---

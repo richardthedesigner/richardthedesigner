@@ -5,7 +5,7 @@ import {client} from '@/sanity/client'
 import {urlForImage} from '@/sanity/image'
 import {WORK_QUERY, WORK_ORDER_QUERY, WORK_SLUGS_QUERY} from '@/sanity/queries'
 import {kindLabel} from '@/lib/tags'
-import {fallbackFor} from '@/lib/fallbackImages'
+import {fallbackFor, fallbackGalleryFor} from '@/lib/fallbackImages'
 import {ArticleRail} from '@/components/ArticleRail'
 import {Media} from '@/components/Media'
 import {Metrics} from '@/components/Metrics'
@@ -63,6 +63,28 @@ export default async function WorkPage({params}: Params) {
 
   const lede = work.standfirst ?? work.description ?? null
   const railSubtitle = work.sector ?? work.client ?? work.role ?? null
+
+  // Hero media: real Sanity asset wins, themed placeholder otherwise.
+  const fb = fallbackFor(slug)
+  const heroMedia =
+    work.heroMedia ??
+    (fb ? {kind: 'image' as const, alt: fb.alt, externalUrl: fb.url} : null)
+
+  // Deterministic layout variant per slug so pages differ but stay stable.
+  const variant = (['panorama', 'split', 'poster'] as const)[
+    Math.abs([...slug].reduce((a, c) => a * 31 + c.charCodeAt(0), 0)) % 3
+  ]
+
+  // Gallery: real images win; otherwise themed placeholders keep the page visual.
+  const gallery = work.gallery?.length
+    ? work.gallery
+    : fallbackGalleryFor(slug).map((g, i) => ({
+        _key: `fb-${i}`,
+        kind: 'image' as const,
+        alt: g.alt,
+        caption: null,
+        externalUrl: g.url,
+      }))
   const metrics = (work.metrics ?? []).map((m) => ({
     _key: m._key,
     value: m.value,
@@ -82,37 +104,70 @@ export default async function WorkPage({params}: Params) {
       />
 
       <div className="canvas-rise min-w-0">
-        {/* Hero */}
-        <header className="relative h-[56vh] max-h-[640px] min-h-[380px] overflow-hidden bg-smalt-deep">
-          {(() => {
-            const fb = fallbackFor(slug)
-            const heroMedia =
-              work.heroMedia ??
-              (fb ? {kind: 'image' as const, alt: fb.alt, externalUrl: fb.url} : null)
-            return heroMedia ? (
+        {/* Hero — three deterministic layout variants */}
+        {variant === 'panorama' ? (
+          <header className="relative h-[56vh] max-h-[640px] min-h-[380px] overflow-hidden bg-smalt-deep">
+            {heroMedia ? (
               <div className="hero-zoom absolute inset-0 opacity-50">
                 <Media media={heroMedia} fill width={1600} priority sizes="70vw" />
               </div>
-            ) : null
-          })()}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-br from-smalt/55 to-[#0a1446]/80"
-          />
-          <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-9 text-white sm:px-11">
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/80">
+            ) : null}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-br from-smalt/55 to-[#0a1446]/80"
+            />
+            <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-9 text-white sm:px-11">
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/80">
+                {kindLabel(work._type)}
+              </p>
+              <h2 className="mt-2.5 max-w-[16ch] text-[clamp(34px,4.4vw,60px)] font-semibold leading-none tracking-[-0.03em]">
+                {work.title}
+              </h2>
+              {lede ? (
+                <p className="mt-4 max-w-[60ch] text-[clamp(16px,1.5vw,20px)] leading-[1.5] text-white/90">
+                  {lede}
+                </p>
+              ) : null}
+            </div>
+          </header>
+        ) : variant === 'split' ? (
+          <header className="grid border-b border-line sm:grid-cols-2">
+            <div className="flex flex-col justify-end px-6 py-10 sm:px-11 sm:py-14">
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-soft">
+                {kindLabel(work._type)}
+              </p>
+              <h2 className="mt-3 max-w-[14ch] text-[clamp(32px,3.8vw,54px)] font-semibold leading-[1.02] tracking-[-0.03em] text-ink">
+                {work.title}
+              </h2>
+              {lede ? (
+                <p className="mt-4 max-w-[44ch] text-[clamp(15px,1.3vw,18px)] leading-[1.55] text-soft">
+                  {lede}
+                </p>
+              ) : null}
+            </div>
+            <div className="relative min-h-[320px] overflow-hidden bg-paper-2 sm:min-h-[440px]">
+              {heroMedia ? (
+                <div className="hero-zoom absolute inset-0">
+                  <Media media={heroMedia} fill width={1200} priority sizes="50vw" />
+                </div>
+              ) : null}
+            </div>
+          </header>
+        ) : (
+          <header className="bg-smalt-deep px-6 py-14 text-white sm:px-11 sm:py-20">
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/70">
               {kindLabel(work._type)}
             </p>
-            <h2 className="mt-2.5 max-w-[16ch] text-[clamp(34px,4.4vw,60px)] font-semibold leading-none tracking-[-0.03em]">
+            <h2 className="mt-4 max-w-[12ch] text-[clamp(44px,7vw,96px)] font-semibold leading-[0.95] tracking-[-0.035em]">
               {work.title}
             </h2>
             {lede ? (
-              <p className="mt-4 max-w-[60ch] text-[clamp(16px,1.5vw,20px)] leading-[1.5] text-white/90">
+              <p className="mt-6 max-w-[52ch] text-[clamp(16px,1.6vw,21px)] leading-[1.5] text-white/85">
                 {lede}
               </p>
             ) : null}
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* Fact sheet */}
         <dl className="grid grid-cols-2 gap-x-6 gap-y-5 border-b border-line px-6 py-7 sm:grid-cols-4 sm:px-11">
@@ -135,6 +190,13 @@ export default async function WorkPage({params}: Params) {
             ))}
         </dl>
 
+        {/* Poster variant gets its image as a full-width band below the facts */}
+        {variant === 'poster' && heroMedia ? (
+          <div className="relative aspect-[21/9] min-h-[260px] overflow-hidden border-b border-line bg-paper-2">
+            <Media media={heroMedia} fill width={1800} priority sizes="100vw" />
+          </div>
+        ) : null}
+
         {/* Proof points */}
         {metrics.length ? (
           <Reveal>
@@ -151,15 +213,15 @@ export default async function WorkPage({params}: Params) {
           </div>
         ) : null}
 
-        {/* Gallery */}
-        {work.gallery?.length ? (
+        {/* Gallery (real images, or themed placeholders until artefacts land) */}
+        {gallery.length ? (
           <section
             aria-label="Gallery"
-            className="grid grid-cols-1 gap-3.5 px-6 pb-14 sm:grid-cols-2 sm:px-11"
+            className="grid grid-cols-1 gap-3.5 px-6 pb-14 sm:grid-cols-2 sm:px-11 [&>*:nth-child(3n)]:sm:col-span-2"
           >
-            {work.gallery.map((g) => (
+            {gallery.map((g) => (
               <Reveal as="figure" key={g._key} className="overflow-hidden rounded-md bg-paper-2">
-                <Media media={g} width={1000} sizes="(max-width: 640px) 100vw, 50vw" />
+                <Media media={g} width={1200} sizes="(max-width: 640px) 100vw, 60vw" />
                 {g.caption ? (
                   <figcaption className="mt-2 px-1 font-mono text-[11.5px] text-soft">
                     {g.caption}
