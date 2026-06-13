@@ -97,6 +97,22 @@ export const caseStudy = defineType({
       initialValue: 'sketch',
       group: 'meta',
     }),
+    defineField({
+      name: 'shape',
+      title: 'Article shape (drives page layout)',
+      description:
+        'Long read = panorama hero + full sections. Brief = split header. Prototype = poster header, gallery-forward. Unset = layout chosen automatically.',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Long read', value: 'long-read'},
+          {title: 'Brief', value: 'brief'},
+          {title: 'Prototype', value: 'prototype'},
+        ],
+        layout: 'radio',
+      },
+      group: 'meta',
+    }),
   ],
   orderings: [
     {title: 'Manual order', name: 'manual', by: [{field: 'order', direction: 'asc'}]},

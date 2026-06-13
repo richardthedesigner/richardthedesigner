@@ -7,7 +7,7 @@ import {WORK_QUERY, WORK_ORDER_QUERY, WORK_SLUGS_QUERY} from '@/sanity/queries'
 import {kindLabel} from '@/lib/tags'
 import {fallbackFor, fallbackGalleryFor} from '@/lib/fallbackImages'
 import {ArticleRail} from '@/components/ArticleRail'
-import {Media} from '@/components/Media'
+import {Media, type MediaLike} from '@/components/Media'
 import {Metrics} from '@/components/Metrics'
 import {PortableTextBody} from '@/components/PortableTextBody'
 import {Reveal} from '@/components/Reveal'
@@ -70,10 +70,19 @@ export default async function WorkPage({params}: Params) {
     work.heroMedia ??
     (fb ? {kind: 'image' as const, alt: fb.alt, externalUrl: fb.url} : null)
 
-  // Deterministic layout variant per slug so pages differ but stay stable.
-  const variant = (['panorama', 'split', 'poster'] as const)[
-    Math.abs([...slug].reduce((a, c) => a * 31 + c.charCodeAt(0), 0)) % 3
-  ]
+  // Layout: an editor-chosen `shape` wins; otherwise a deterministic
+  // per-slug variant so pages differ but stay stable.
+  const SHAPE_VARIANT: Record<string, 'panorama' | 'split' | 'poster'> = {
+    'long-read': 'panorama',
+    brief: 'split',
+    prototype: 'poster',
+  }
+  const shape = (work as {shape?: string | null}).shape
+  const variant =
+    (shape ? SHAPE_VARIANT[shape] : undefined) ??
+    (['panorama', 'split', 'poster'] as const)[
+      Math.abs([...slug].reduce((a, c) => a * 31 + c.charCodeAt(0), 0)) % 3
+    ]
 
   // Gallery: real images win; otherwise themed placeholders keep the page visual.
   const gallery = work.gallery?.length
@@ -85,7 +94,7 @@ export default async function WorkPage({params}: Params) {
         caption: null,
         externalUrl: g.url,
       }))
-  const metrics = (work.metrics ?? []).map((m) => ({
+  const metrics = (work.metrics ?? []).map((m: {_key: string; value: string | null; label: string | null; note?: string | null}) => ({
     _key: m._key,
     value: m.value,
     label: m.label,
@@ -237,7 +246,7 @@ export default async function WorkPage({params}: Params) {
             aria-label="Gallery"
             className="grid grid-cols-1 gap-3.5 px-6 pb-14 sm:grid-cols-2 sm:px-11 [&>*:nth-child(3n)]:sm:col-span-2"
           >
-            {gallery.map((g) => (
+            {gallery.map((g: MediaLike & {_key: string}) => (
               <Reveal as="figure" key={g._key} className="overflow-hidden rounded-md bg-paper-2">
                 <Media media={g} width={1200} sizes="(max-width: 640px) 100vw, 60vw" />
                 {g.caption ? (

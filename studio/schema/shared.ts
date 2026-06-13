@@ -8,6 +8,10 @@ export const storyTags = [
   {title: 'Design the system', value: 'systems'},
   {title: 'Transform the org', value: 'transform'},
   {title: 'Keep craft visible', value: 'craft'},
+  // Sixth bucket for personal/experimental pieces that don't fit the work
+  // verbs (Swurf, Wall design, the venture concepts). Masthead sentence:
+  // "How I ... / play." Frontend filter activates once pieces are tagged.
+  {title: 'Play in public', value: 'play'},
 ]
 
 // Internal workflow state. Not public. Lets the CMS work as a knowledge base

@@ -59,8 +59,9 @@ export function Media({
       ) : (
         <span
           className={base}
-          role="img"
-          aria-label={alt}
+          role={alt ? 'img' : undefined}
+          aria-label={alt || undefined}
+          aria-hidden={alt ? undefined : true}
           style={{backgroundColor: 'var(--color-paper-2)'}}
         />
       )

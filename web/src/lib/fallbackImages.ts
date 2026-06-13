@@ -45,7 +45,7 @@ export const FALLBACK_IMAGES: Record<string, FallbackImage> = {
     url: u('photo-1497366216548-37526070297c'),
     alt: 'Quiet modern office interior',
   },
-  'gdk-kiosk-go-live': {
+  'qsr-kiosk-go-live': {
     url: u('photo-1711632308710-f2e5bf722778'),
     alt: 'Ordering kiosk screen in a quick-service restaurant',
   },
@@ -190,7 +190,7 @@ const SLUG_THEMES: Record<string, Theme> = {
   'access-evoguest': 'kiosk',
   'prepay-qikserve': 'abstract',
   quoin: 'office',
-  'gdk-kiosk-go-live': 'kiosk',
+  'qsr-kiosk-go-live': 'kiosk',
   'access-kiosk-pocket': 'ordering',
   'hudson-and-armitage': 'print',
   optify: 'abstract',

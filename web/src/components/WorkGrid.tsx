@@ -218,7 +218,10 @@ function WorkCellLink({
         {work.title}
       </span>
       {work.summary ? (
-        <span className="relative z-10 mt-0 max-h-0 max-w-[38ch] overflow-hidden text-[12.5px] leading-[1.45] text-white/90 opacity-0 transition-[opacity,max-height,margin-top] duration-300 group-hover:mt-2 group-hover:max-h-28 group-hover:opacity-100 group-focus-within:mt-2 group-focus-within:max-h-28 group-focus-within:opacity-100">
+        // Hover/focus enhancement only; hidden from the tree so the link's
+        // accessible name stays "kind, title, subtitle" (full standfirst lives
+        // on the detail page).
+        <span aria-hidden="true" className="relative z-10 mt-0 max-h-0 max-w-[38ch] overflow-hidden text-[12.5px] leading-[1.45] text-white/90 opacity-0 transition-[opacity,max-height,margin-top] duration-300 group-hover:mt-2 group-hover:max-h-28 group-hover:opacity-100 group-focus-within:mt-2 group-focus-within:max-h-28 group-focus-within:opacity-100">
           {work.summary}
         </span>
       ) : null}

@@ -108,6 +108,7 @@ export const WORK_QUERY = defineQuery(`
     timeframe,
     year,
     tags,
+    shape,
     heroMedia{
       kind,
       alt,

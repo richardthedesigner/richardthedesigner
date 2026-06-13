@@ -153,6 +153,7 @@ export type Project = {
   featured?: boolean;
   order?: number;
   publishingStatus?: "drafted" | "framed" | "sketch" | "name-only";
+  shape?: "long-read" | "brief" | "prototype";
 };
 
 export type CaseStudy = {
@@ -181,6 +182,7 @@ export type CaseStudy = {
   featured?: boolean;
   order?: number;
   publishingStatus?: "drafted" | "framed" | "sketch" | "name-only";
+  shape?: "long-read" | "brief" | "prototype";
 };
 
 export type SanityImageCrop = {
@@ -502,7 +504,7 @@ export type WORK_SLUGS_QUERYResult = Array<{
   slug: string;
 }>;
 // Variable: WORK_QUERY
-// Query: *[(_type == "caseStudy" || _type == "project") && slug.current == $slug][0]{    _id,    _type,    title,    "slug": slug.current,    standfirst,    description,    client,    role,    sector,    timeframe,    year,    tags,    heroMedia{      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    },    metrics[]{      _key,      value,      label,      note    },    body[]{      ...,      _type == "mediaItem" => {        ...,        "videoUrl": coalesce(videoUrl, videoFile.asset->url),        "lqip": image.asset->metadata.lqip      }    },    gallery[]{      _key,      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  }
+// Query: *[(_type == "caseStudy" || _type == "project") && slug.current == $slug][0]{    _id,    _type,    title,    "slug": slug.current,    standfirst,    description,    client,    role,    sector,    timeframe,    year,    tags,    shape,    heroMedia{      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    },    metrics[]{      _key,      value,      label,      note    },    body[]{      ...,      _type == "mediaItem" => {        ...,        "videoUrl": coalesce(videoUrl, videoFile.asset->url),        "lqip": image.asset->metadata.lqip      }    },    gallery[]{      _key,      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  }
 export type WORK_QUERYResult = {
   _id: string;
   _type: "caseStudy";
@@ -516,6 +518,7 @@ export type WORK_QUERYResult = {
   timeframe: string | null;
   year: number | null;
   tags: Array<string> | null;
+  shape: "brief" | "long-read" | "prototype" | null;
   heroMedia: {
     kind: "image" | "video";
     alt: string;
@@ -658,6 +661,7 @@ export type WORK_QUERYResult = {
   timeframe: null;
   year: number | null;
   tags: Array<string> | null;
+  shape: "brief" | "long-read" | "prototype" | null;
   heroMedia: {
     kind: "image" | "video";
     alt: string;
@@ -916,7 +920,7 @@ declare module "@sanity/client" {
     "{\n  \"settings\": *[_id == \"siteSettings\"][0]{\n    title,\n    intro\n  },\n  \"ordered\": *[_id == \"siteSettings\"][0].gridOrder[]->{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    \"summary\": coalesce(standfirst, description),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  },\n  \"extra\": *[\n    (_type == \"caseStudy\" || _type == \"project\")\n    && defined(slug.current)\n    && !(_id in *[_id == \"siteSettings\"][0].gridOrder[]._ref)\n  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    \"summary\": coalesce(standfirst, description),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n}": HOME_QUERYResult;
     "{\n  \"ordered\": *[_id == \"siteSettings\"][0].gridOrder[]->{\n    _type,\n    title,\n    \"slug\": slug.current\n  },\n  \"extra\": *[\n    (_type == \"caseStudy\" || _type == \"project\")\n    && defined(slug.current)\n    && !(_id in *[_id == \"siteSettings\"][0].gridOrder[]._ref)\n  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){\n    _type,\n    title,\n    \"slug\": slug.current\n  }\n}": WORK_ORDER_QUERYResult;
     "\n  *[(_type == \"caseStudy\" || _type == \"project\") && defined(slug.current)]{\n    \"slug\": slug.current\n  }\n": WORK_SLUGS_QUERYResult;
-    "\n  *[(_type == \"caseStudy\" || _type == \"project\") && slug.current == $slug][0]{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    standfirst,\n    description,\n    client,\n    role,\n    sector,\n    timeframe,\n    year,\n    tags,\n    heroMedia{\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    },\n    metrics[]{\n      _key,\n      value,\n      label,\n      note\n    },\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    },\n    gallery[]{\n      _key,\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n": WORK_QUERYResult;
+    "\n  *[(_type == \"caseStudy\" || _type == \"project\") && slug.current == $slug][0]{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    standfirst,\n    description,\n    client,\n    role,\n    sector,\n    timeframe,\n    year,\n    tags,\n    shape,\n    heroMedia{\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    },\n    metrics[]{\n      _key,\n      value,\n      label,\n      note\n    },\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    },\n    gallery[]{\n      _key,\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n": WORK_QUERYResult;
     "\n  *[_type == \"musing\" && defined(slug.current)] | order(publishedAt desc){\n    _id,\n    title,\n    \"slug\": slug.current,\n    excerpt,\n    publishedAt,\n    tags\n  }\n": MUSINGS_INDEX_QUERYResult;
     "\n  *[_type == \"musing\" && defined(slug.current)]{\n    \"slug\": slug.current\n  }\n": MUSING_SLUGS_QUERYResult;
     "\n  *[_type == \"musing\" && slug.current == $slug][0]{\n    _id,\n    title,\n    \"slug\": slug.current,\n    publishedAt,\n    excerpt,\n    tags,\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    }\n  }\n": MUSING_QUERYResult;
