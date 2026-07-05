@@ -62,7 +62,9 @@ function CountUp({value}: {value: string}) {
         const dur = 900
         const start = performance.now()
         const tick = (now: number) => {
-          const k = Math.min(1, (now - start) / dur)
+          // Clamp at 0 too: the first rAF timestamp can precede `start`,
+          // which would flash a negative count.
+          const k = Math.min(1, Math.max(0, (now - start) / dur))
           const eased = 1 - Math.pow(1 - k, 3)
           const n = Math.round(numeric * eased)
           setDisplay(`${pre}${n.toLocaleString('en-GB')}${post}`)

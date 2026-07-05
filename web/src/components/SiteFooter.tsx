@@ -3,10 +3,9 @@ import Link from 'next/link'
 import {client} from '@/sanity/client'
 import {LocalTime} from '@/components/LocalTime'
 
-const FOOTER_QUERY = `*[_id == "siteSettings"][0]{intro, contactEmail, locations}`
+const FOOTER_QUERY = `*[_id == "siteSettings"][0]{contactEmail, locations}`
 
 type FooterSettings = {
-  intro?: string | null
   contactEmail?: string | null
   locations?: string[] | null
 }
@@ -17,35 +16,32 @@ const NAV = [
   {href: '/info', label: 'Info'},
 ]
 
-// Sitewide footer: the about text and contact live here (no global header).
+// Sitewide footer: a compact contact band. The bio lives in the home
+// masthead and on /info — repeating it here read as noise, so the footer's
+// only jobs are the email CTA, primary nav and a sense of place.
 export async function SiteFooter() {
-  const s = await client.fetch<FooterSettings>(FOOTER_QUERY)
+  const s = await client.fetch<FooterSettings>(FOOTER_QUERY).catch(() => null)
 
   return (
-    <footer className="bg-smalt px-6 py-14 text-white sm:px-11">
-      <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_auto]">
+    <footer className="bg-smalt px-6 py-12 text-white sm:px-11">
+      <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-8">
         <div>
           <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-white/90">
-            About
+            Get in touch
           </p>
-          {s?.intro ? (
-            <p className="mt-4 max-w-[58ch] text-[15.5px] leading-[1.65] text-white/90">
-              {s.intro}
-            </p>
-          ) : null}
           {s?.contactEmail ? (
             <a
               href={`mailto:${s.contactEmail}`}
-              className="mt-9 inline-block border-b-2 border-white/70 pb-1 text-[clamp(22px,3.2vw,38px)] font-semibold tracking-[-0.02em] transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              className="mt-4 inline-block border-b-2 border-white/70 pb-1 text-[clamp(22px,3.2vw,38px)] font-semibold tracking-[-0.02em] transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
             >
               {s.contactEmail}
             </a>
           ) : null}
         </div>
 
-        <div className="flex flex-col justify-between gap-8 md:items-end md:text-right">
+        <div className="flex flex-col gap-5 md:items-end md:text-right">
           <nav aria-label="Site">
-            <ul className="space-y-1.5 font-mono text-[13px]">
+            <ul className="flex gap-x-6 font-mono text-[13px]">
               {NAV.map((item) => (
                 <li key={item.href}>
                   <Link
