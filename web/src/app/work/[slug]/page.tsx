@@ -10,7 +10,7 @@ import {SITE_URL, jsonLd} from '@/lib/site'
 import {splitBody, type PTBlock} from '@/lib/portable'
 import {fallbackFor, fallbackGalleryFor} from '@/lib/fallbackImages'
 import {ArticleRail} from '@/components/ArticleRail'
-import {LongRead, type StageImage} from '@/components/LongRead'
+import {EditorialRead, type StageImage} from '@/components/EditorialRead'
 import {Media, type MediaLike} from '@/components/Media'
 import {Metrics} from '@/components/Metrics'
 import {PortableTextBody} from '@/components/PortableTextBody'
@@ -285,7 +285,7 @@ export default async function WorkPage({params}: Params) {
                 </div>
               </div>
             ) : null}
-            <LongRead sections={sections} stage={stage} />
+            <EditorialRead sections={sections} images={stage} />
           </>
         ) : work.body?.length ? (
           <div className="px-6 py-12 sm:px-11">

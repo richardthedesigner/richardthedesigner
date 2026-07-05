@@ -6,7 +6,13 @@ export type PTBlock = {
   _type: string
   _key: string
   style?: string
+  listItem?: string
+  level?: number
   children?: {text?: string | null}[]
+}
+
+export function plainText(block: PTBlock): string {
+  return (block.children ?? []).map((c) => c.text ?? '').join('')
 }
 
 export type ReadSection = {

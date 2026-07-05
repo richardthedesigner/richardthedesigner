@@ -3,8 +3,8 @@
 import {useEffect, useState} from 'react'
 
 // Section list for the sticky article rail, with scroll-spy. Targets the
-// LongRead step elements by id; highlights whichever crosses the viewport
-// centre band.
+// EditorialRead section wrappers by id; highlights whichever crosses the
+// viewport centre band.
 export function RailToc({
   sections,
 }: {
