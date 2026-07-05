@@ -1,12 +1,12 @@
 'use client'
 
-import {Fragment, useMemo, useState} from 'react'
+import {Fragment, useEffect, useMemo, useRef, useState} from 'react'
 import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
 import {STORY_TAGS, kindLabel} from '@/lib/tags'
 import {fallbackFor} from '@/lib/fallbackImages'
-import {FlapText} from '@/components/FlapText'
+import {SplitFlap} from '@/components/SplitFlap'
 import {Media, type MediaLike} from '@/components/Media'
 
 function cardMedia(work: WorkCard): MediaLike | null {
@@ -24,23 +24,9 @@ type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number] & {
 
 type Filter = 'all' | (typeof STORY_TAGS)[number]['value']
 
-// Mosaic variants. Curated (gridOrder) items cycle through the large
-// image-faced treatments; everything else stays a compact text cell.
-type CellVariant = 'feature' | 'tall' | 'wide' | 'text'
-
-const FEATURE_PATTERN: CellVariant[] = ['feature', 'tall', 'wide', 'feature', 'wide', 'tall']
-
-// Cap the image-faced cells regardless of how many items gridOrder holds:
-// a mosaic where everything is big is uniform all over again.
-const MAX_FACES = 6
-
-function variantFor(i: number, featuredCount: number): CellVariant {
-  if (i >= featuredCount || i >= MAX_FACES) return 'text'
-  return FEATURE_PATTERN[i % FEATURE_PATTERN.length]
-}
-
-// Editorial interstitials: proof points breaking the grid rhythm.
-// Keyed by the index they appear AFTER. Values must stay CV-true.
+// Editorial interstitials: proof points that ride the board as their own
+// panels, flapping into place alongside the work. Keyed by the index they
+// appear AFTER. Values must stay CV-true.
 const STAT_CELLS: Record<number, {value: string; label: string}> = {
   4: {value: '800 → 8,000+', label: 'venues during my tenure'},
   11: {value: '$1bn+', label: 'processed annually across the platform'},
@@ -57,17 +43,56 @@ const SENTENCE_WORDS: Record<(typeof STORY_TAGS)[number]['value'], string> = {
   play: 'play',
 }
 
+// The load choreography. `idle` = settled, no flap (repeat visits within a
+// session); `grand` = the once-per-session opening sweep; `quiet` = the brisk
+// re-flap when the filter changes.
+type Mode = 'idle' | 'grand' | 'quiet'
+
+// Grand sweep: panels rise (cell-enter), then a beat later their titles start
+// flapping, cascading left-to-right and down the board.
+function flapDelay(mode: Mode, i: number): number {
+  if (mode === 'grand') return 300 + Math.min(i, 22) * 55
+  if (mode === 'quiet') return Math.min(i, 22) * 12
+  return 0
+}
+
 export function WorkGrid({
   work,
-  featuredCount,
   intro,
 }: {
   work: WorkCard[]
-  featuredCount: number
   intro: string | null
 }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [preview, setPreview] = useState<WorkCard | null>(null)
+  const [mode, setMode] = useState<Mode>('idle')
+  const mounted = useRef(false)
+
+  // First paint after mount: run the grand opening once per session; on repeat
+  // visits the board is simply present, settled, no theatre.
+  useEffect(() => {
+    let grand = true
+    try {
+      grand = !sessionStorage.getItem('board-intro')
+      if (grand) sessionStorage.setItem('board-intro', '1')
+    } catch {
+      // Private mode / storage disabled: just play it.
+    }
+    // Deliberate: the opening sweep can only be decided client-side (it reads
+    // sessionStorage and must not run during SSR), so we settle the mode once
+    // after mount rather than during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMode(grand ? 'grand' : 'idle')
+  }, [])
+
+  // Re-flap (briskly) whenever the filter changes — but not on the first render.
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
+    setMode('quiet')
+  }, [filter])
 
   const visibleCount = useMemo(
     () =>
@@ -75,34 +100,6 @@ export function WorkGrid({
         .length,
     [work, filter],
   )
-
-  // The span pattern rarely divides evenly into the 3-col (lg) and 2-col (sm)
-  // grids, which would leave blank holes on the final row. Work out the
-  // remainder per breakpoint and square it off with one colophon cell.
-  const {lgGap, smGap} = useMemo(() => {
-    const UNITS_LG: Record<CellVariant, number> = {feature: 4, tall: 2, wide: 2, text: 1}
-    const UNITS_SM: Record<CellVariant, number> = {feature: 2, tall: 1, wide: 2, text: 1}
-    let lg = 0
-    let sm = 0
-    work.forEach((_, i) => {
-      const v = variantFor(i, featuredCount)
-      lg += UNITS_LG[v]
-      sm += UNITS_SM[v]
-    })
-    const stats = Object.keys(STAT_CELLS).filter((k) => Number(k) < work.length).length
-    lg += stats
-    sm += stats
-    return {lgGap: (3 - (lg % 3)) % 3, smGap: (2 - (sm % 2)) % 2}
-  }, [work, featuredCount])
-
-  const fillerClass = [
-    'cell hidden flex-col justify-end gap-0.5 border-r border-b border-line bg-paper px-3.5 py-3',
-    smGap === 1 ? 'sm:flex' : '',
-    lgGap === 0 ? 'lg:hidden' : 'lg:flex',
-    lgGap === 2 ? 'lg:col-span-2' : '',
-  ]
-    .filter(Boolean)
-    .join(' ')
 
   return (
     <div className="grid flex-1 grid-cols-1 md:grid-cols-[minmax(320px,36%)_1fr]">
@@ -205,8 +202,11 @@ export function WorkGrid({
         </div>
       </aside>
 
-      {/* ---- Grid ---- */}
-      <section aria-label="Selected work" className="work-grid grid grid-flow-dense grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
+      {/* ---- The board: a uniform matrix of split-flap panels ---- */}
+      <section
+        aria-label="Selected work"
+        className="work-grid grid grid-cols-1 auto-rows-[168px] sm:grid-cols-2 sm:auto-rows-[188px] lg:grid-cols-3 lg:auto-rows-[196px]"
+      >
         {work.map((w, i) => {
           const match = filter === 'all' || (w.tags ?? []).includes(filter)
           const stat = STAT_CELLS[i]
@@ -214,11 +214,12 @@ export function WorkGrid({
             <Fragment key={w._id}>
               <WorkCellLink
                 work={w}
-                variant={variantFor(i, featuredCount)}
                 dimmed={!match}
-                eager={i < 3}
+                eager={i < 6}
                 enterDelay={Math.min(i, 11) * 45}
-                flapGeneration={filter}
+                flapKey={`${mode}-${filter}`}
+                flapPlay={mode !== 'idle'}
+                flapDelay={flapDelay(mode, i)}
                 onPreview={() => setPreview(w)}
                 onClearPreview={() => setPreview((p) => (p === w ? null : p))}
               />
@@ -227,8 +228,14 @@ export function WorkGrid({
                   <span className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-white/70">
                     In numbers
                   </span>
-                  <span className="mt-1 text-[clamp(24px,2vw,32px)] font-bold leading-none tracking-[-0.02em]">
-                    {stat.value}
+                  <span className="mt-1 text-[clamp(22px,1.9vw,30px)] font-bold leading-none tracking-[-0.02em]">
+                    <SplitFlap
+                      key={`${mode}-${filter}`}
+                      text={stat.value}
+                      tone="dark"
+                      play={mode !== 'idle'}
+                      delay={flapDelay(mode, i)}
+                    />
                   </span>
                   <span className="mt-1.5 font-mono text-[10px] text-white/85">
                     {stat.label}
@@ -238,12 +245,14 @@ export function WorkGrid({
             </Fragment>
           )
         })}
-        {lgGap > 0 || smGap > 0 ? (
-          <p aria-hidden="true" className={fillerClass}>
-            <span className="font-mono text-[10px] text-soft">richardthedesigner.com</span>
-            <span className="font-mono text-[10px] text-soft">Edinburgh · making things since 2014</span>
-          </p>
-        ) : null}
+        {/* Colophon end-cap: the board's footer panel. */}
+        <p
+          aria-hidden="true"
+          className="cell cell-enter flex flex-col justify-end gap-0.5 border-r border-b border-line bg-paper px-3.5 py-3"
+        >
+          <span className="font-mono text-[10px] text-soft">richardthedesigner.com</span>
+          <span className="font-mono text-[10px] text-soft">Edinburgh · making things since 2014</span>
+        </p>
       </section>
     </div>
   )
@@ -274,38 +283,29 @@ function FilterWord({
   )
 }
 
-const SPAN_CLASS: Record<CellVariant, string> = {
-  feature: 'min-h-[300px] sm:col-span-2 lg:col-span-2 lg:row-span-2',
-  tall: 'min-h-[300px] lg:row-span-2',
-  wide: 'min-h-[240px] sm:col-span-2',
-  text: '',
-}
-
 function WorkCellLink({
   work,
-  variant,
   dimmed,
   eager,
   enterDelay,
-  flapGeneration,
+  flapKey,
+  flapPlay,
+  flapDelay,
   onPreview,
   onClearPreview,
 }: {
   work: WorkCard
-  variant: CellVariant
   dimmed: boolean
   eager: boolean
   enterDelay: number
-  /** Changes when the filter changes, re-flapping the whole board. */
-  flapGeneration: string
+  /** Remounts (and so replays) the title flap when the mode or filter changes. */
+  flapKey: string
+  flapPlay: boolean
+  flapDelay: number
   onPreview: () => void
   onClearPreview: () => void
 }) {
   const media = cardMedia(work)
-  const face = variant !== 'text' && media
-  const title = work.title ? (
-    <FlapText key={flapGeneration} text={work.title} delay={enterDelay + 120} />
-  ) : null
 
   const shared = {
     href: `/work/${work.slug}`,
@@ -318,45 +318,44 @@ function WorkCellLink({
     style: {animationDelay: `${enterDelay}ms`},
   }
 
-  // Image-faced mosaic cell: the work is visible without a hover.
-  if (face) {
+  const title = work.title ? (
+    <SplitFlap
+      key={flapKey}
+      text={work.title}
+      tone={media ? 'dark' : 'light'}
+      play={flapPlay}
+      delay={flapDelay}
+    />
+  ) : null
+
+  // Image panel: the work rides behind the flapped title, dimmed so the
+  // characters stay legible.
+  if (media) {
     return (
       <Link
         {...shared}
         className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-smalt-deep p-5 text-white transition-opacity duration-300 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
-          SPAN_CLASS[variant]
-        } ${dimmed ? 'pointer-events-none opacity-30' : ''}`}
+          dimmed ? 'pointer-events-none opacity-30' : ''
+        }`}
       >
         <span aria-hidden="true" className="absolute inset-0">
           <Media
             media={media}
             fill
             priority={eager}
-            width={variant === 'feature' ? 1200 : 800}
-            sizes={variant === 'feature' ? '(max-width: 1024px) 100vw, 44vw' : '(max-width: 1024px) 100vw, 22vw'}
-            className="transition-transform duration-500 group-hover:scale-[1.03]"
+            width={800}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 30vw"
+            className="transition-transform duration-500 group-hover:scale-[1.04]"
           />
-          <span className="absolute inset-0 bg-smalt/40 mix-blend-multiply" />
-          <span className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/15 to-transparent" />
+          <span className="absolute inset-0 bg-smalt/45 mix-blend-multiply" />
+          <span className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-ink/10" />
         </span>
         <span className="absolute top-4 right-5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-white/85">
           {kindLabel(work._type)}
         </span>
-        <span
-          className={`relative z-10 mt-auto font-semibold leading-[1.1] tracking-[-0.015em] ${
-            variant === 'feature' ? 'text-[clamp(20px,1.9vw,28px)]' : 'text-[17px]'
-          }`}
-        >
+        <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.2] tracking-[-0.015em] sm:text-[16px]">
           {title}
         </span>
-        {variant === 'feature' && work.summary ? (
-          <span
-            aria-hidden="true"
-            className="relative z-10 mt-2 max-w-[46ch] text-[13px] leading-[1.5] text-white/90"
-          >
-            {work.summary}
-          </span>
-        ) : null}
         {work.subtitle ? (
           <span className="relative z-10 mt-1.5 font-mono text-[10px] text-white/85">
             {work.subtitle}
@@ -366,39 +365,22 @@ function WorkCellLink({
     )
   }
 
+  // Text panel: cream board tile, ink characters.
   return (
     <Link
       {...shared}
-      className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,background-color,color] duration-300 hover:bg-smalt hover:text-white focus-within:bg-smalt focus-within:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
+      className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-colors duration-300 hover:bg-paper-2 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
         dimmed ? 'pointer-events-none opacity-30' : ''
       }`}
     >
-      <span className="absolute top-3 right-3.5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft group-hover:text-white/85 group-focus-within:text-white/85">
+      <span className="absolute top-3 right-3.5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft">
         {kindLabel(work._type)}
       </span>
-      {/* Touch has no hover reveal, so cells carry their imagery directly
-          below md; on md+ the preview image lives in the masthead backdrop. */}
-      {media ? (
-        <span
-          aria-hidden="true"
-          className="relative -mx-3.5 mt-4 mb-3 block aspect-[16/9] overflow-hidden md:hidden"
-        >
-          <Media media={media} fill width={640} sizes="100vw" />
-        </span>
-      ) : null}
-      <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.12] tracking-[-0.012em]">
+      <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.2] tracking-[-0.012em] sm:text-[16px]">
         {title}
       </span>
-      {work.summary ? (
-        // Hover/focus enhancement only; hidden from the tree so the link's
-        // accessible name stays "kind, title, subtitle" (full standfirst lives
-        // on the detail page).
-        <span aria-hidden="true" className="relative z-10 mt-0 max-h-0 max-w-[38ch] overflow-hidden text-[12.5px] leading-[1.45] text-white/90 opacity-0 transition-[opacity,max-height,margin-top] duration-300 group-hover:mt-2 group-hover:max-h-28 group-hover:opacity-100 group-focus-within:mt-2 group-focus-within:max-h-28 group-focus-within:opacity-100">
-          {work.summary}
-        </span>
-      ) : null}
       {work.subtitle ? (
-        <span className="relative z-10 mt-1 font-mono text-[10px] text-soft group-hover:text-white/90 group-focus-within:text-white/90">
+        <span className="relative z-10 mt-1 font-mono text-[10px] text-soft">
           {work.subtitle}
         </span>
       ) : null}

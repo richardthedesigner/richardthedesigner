@@ -15,6 +15,9 @@ export function ObfuscatedEmail({
   className?: string
 }) {
   const [ready, setReady] = useState(false)
+  // Deliberate: reveal the real address only after hydration (client-only), so
+  // the served HTML never contains it.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setReady(true), [])
 
   if (!ready) {

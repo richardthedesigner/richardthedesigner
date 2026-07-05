@@ -171,6 +171,98 @@ body {
   animation: fade-up 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+/* ===========================================================================
+   Split-flap panels (Solari departure board). Each character is a fixed-width
+   monospace cell; on a glyph change the top leaf folds down over the centre
+   seam to reveal the new character. Colours come from two custom properties so
+   the same panel works on the cream tiles (light) and image tiles (dark).
+   =========================================================================== */
+.flap-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0;
+  vertical-align: baseline;
+}
+.flap {
+  --flap-face: #e7e4da;
+  --flap-seam: rgba(20, 21, 26, 0.24);
+  --flap-edge: rgba(20, 21, 26, 0.08);
+  position: relative;
+  display: inline-block;
+  width: 0.86em;
+  height: 1.28em;
+  line-height: 1.28em;
+  text-align: center;
+  color: inherit;
+  background: var(--flap-face);
+  border-radius: 2px;
+  overflow: hidden;
+  perspective: 150px;
+  box-shadow:
+    0 0.5px 0 rgba(0, 0, 0, 0.08),
+    inset 0 0 0 0.5px var(--flap-edge);
+}
+.flap-dark {
+  --flap-face: rgba(9, 11, 18, 0.82);
+  --flap-seam: rgba(255, 255, 255, 0.16);
+  --flap-edge: rgba(255, 255, 255, 0.1);
+}
+/* The centre seam: a hairline gap splitting the panel into two leaves. */
+.flap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  margin-top: -0.5px;
+  background: var(--flap-seam);
+  z-index: 3;
+  pointer-events: none;
+}
+.flap-face {
+  position: absolute;
+  inset: 0;
+}
+/* The top leaf: clips to the top half and drops into place about its top edge
+   on every glyph change — the split-flap "clack". */
+.flap-leaf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 50%;
+  overflow: hidden;
+  background: var(--flap-face);
+  transform-origin: center top;
+  animation: flap-fold 90ms cubic-bezier(0.3, 0.7, 0.3, 1) both;
+  backface-visibility: hidden;
+  z-index: 4;
+}
+.flap-leaf-glyph {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 200%; /* full cell height, so only the glyph's top half shows */
+  line-height: 1.28em;
+}
+@keyframes flap-fold {
+  from {
+    transform: rotateX(-90deg);
+  }
+  to {
+    transform: rotateX(0deg);
+  }
+}
+.flap-space {
+  display: inline-block;
+  width: 0.42em;
+}
+
 /* Spotlight: when the grid is hovered/focused, non-active cells recede */
 .work-grid:hover .cell:not(:hover):not(:focus-within),
 .work-grid:focus-within .cell:not(:hover):not(:focus-within) {
@@ -215,5 +307,9 @@ body {
   }
   .ticker-run {
     animation: none !important;
+  }
+  /* No mechanical fold: panels show their settled face only. */
+  .flap-leaf {
+    display: none !important;
   }
 }
