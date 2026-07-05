@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import {client} from '@/sanity/client'
 import {LocalTime} from '@/components/LocalTime'
+import {ObfuscatedEmail} from '@/components/ObfuscatedEmail'
 
 const FOOTER_QUERY = `*[_id == "siteSettings"][0]{contactEmail, locations}`
 
@@ -30,12 +31,13 @@ export async function SiteFooter() {
             Get in touch
           </p>
           {s?.contactEmail ? (
-            <a
-              href={`mailto:${s.contactEmail}`}
-              className="mt-4 inline-block border-b-2 border-white/70 pb-1 text-[clamp(22px,3.2vw,38px)] font-semibold tracking-[-0.02em] transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-            >
-              {s.contactEmail}
-            </a>
+            <span className="mt-4 inline-block">
+              <ObfuscatedEmail
+                user={s.contactEmail.split('@')[0]}
+                domain={s.contactEmail.split('@')[1] ?? ''}
+                className="inline-block border-b-2 border-white/70 pb-1 text-[clamp(22px,3.2vw,38px)] font-semibold tracking-[-0.02em] transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              />
+            </span>
           ) : null}
         </div>
 

@@ -60,7 +60,7 @@ export async function GET() {
 
 This is the portfolio of Richard Murphy, a product designer and design leader based in ${s?.locations?.[0] ?? 'Edinburgh, UK'}. Headline facts: six years leading design across QikServe and Access Group (Head of Product Design, then Hospitality UX Lead); self-service ordering platform grown from ~800 to 8,000+ locations across 42 countries with 100+ integrations and more than $1bn processed annually; design team grown from one to five across the UK and Brazil; WCAG 2.1 AA accessibility delivered as standard. Now Alliances Lead at TBSCG, a trustee of the disabled access charity Euan's Guide, and building Orson, an independent AI-native venture.
 
-Contact: ${s?.contactEmail ?? 'via the site'}
+Contact: via the email link on ${SITE_URL}/info (address withheld from this file to limit harvesting)
 Site: ${SITE_URL}
 
 ## Case studies

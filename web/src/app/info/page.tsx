@@ -2,6 +2,7 @@ import type {Metadata} from 'next'
 
 import {client} from '@/sanity/client'
 import {INFO_QUERY} from '@/sanity/queries'
+import {ObfuscatedEmail} from '@/components/ObfuscatedEmail'
 import {PageNav} from '@/components/PageNav'
 
 export const revalidate = 60
@@ -68,12 +69,11 @@ export default async function InfoPage() {
               Contact
             </dt>
             <dd className="mt-2">
-              <a
-                href={`mailto:${settings.contactEmail}`}
+              <ObfuscatedEmail
+                user={settings.contactEmail.split('@')[0]}
+                domain={settings.contactEmail.split('@')[1] ?? ''}
                 className="text-[17px] text-smalt-deep underline decoration-from-font underline-offset-2 hover:text-smalt"
-              >
-                {settings.contactEmail}
-              </a>
+              />
             </dd>
           </div>
         ) : null}

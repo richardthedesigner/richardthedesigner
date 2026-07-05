@@ -84,9 +84,9 @@ export default async function RootLayout({
                   jobTitle: 'Product Designer & Design Leader',
                   description:
                     'Product designer and design leader. Formerly Head of Product Design at QikServe and Hospitality UX Lead at Access Group; now Alliances Lead at TBSCG, a trustee of the disabled access charity Euan’s Guide, and founder of Orson, an AI-native venture.',
-                  email: settings?.contactEmail
-                    ? `mailto:${settings.contactEmail}`
-                    : undefined,
+                  // Deliberately no email here: structured data is a pure
+                  // harvesting surface. Contact lives behind the JS-assembled
+                  // link in the footer.
                   address: {'@type': 'PostalAddress', addressLocality: 'Edinburgh', addressCountry: 'GB'},
                   url: SITE_URL,
                   sameAs: ['https://github.com/richardthedesigner'],
