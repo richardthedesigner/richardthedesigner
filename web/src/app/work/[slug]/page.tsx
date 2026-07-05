@@ -1,5 +1,4 @@
 import type {Metadata} from 'next'
-import Link from 'next/link'
 import {notFound} from 'next/navigation'
 
 import {client} from '@/sanity/client'
@@ -15,19 +14,6 @@ import {Media, type MediaLike} from '@/components/Media'
 import {Metrics} from '@/components/Metrics'
 import {PortableTextBody} from '@/components/PortableTextBody'
 import {Reveal} from '@/components/Reveal'
-
-// Related work by shared story tag (local untyped query; the typegen'd set
-// doesn't carry this projection).
-const RELATED_QUERY = `*[_type in ["caseStudy", "project"] && defined(slug.current) && slug.current != $slug && count(coalesce(tags, [])[@ in $tags]) > 0] | order(coalesce(order, 100) asc)[0...3]{
-  title, "slug": slug.current, "kind": _type, "subtitle": coalesce(sector, client)
-}`
-
-type RelatedItem = {
-  title: string | null
-  slug: string | null
-  kind: string
-  subtitle: string | null
-}
 
 export const revalidate = 60
 export const dynamicParams = true
@@ -77,10 +63,6 @@ export default async function WorkPage({params}: Params) {
   ])
 
   if (!work) notFound()
-
-  const related = await client
-    .fetch<RelatedItem[]>(RELATED_QUERY, {slug, tags: work.tags ?? []})
-    .catch(() => [])
 
   const list = [...(order?.ordered ?? []), ...(order?.extra ?? [])]
   const idx = list.findIndex((w) => w.slug === slug)
@@ -314,35 +296,6 @@ export default async function WorkPage({params}: Params) {
           </section>
         ) : null}
 
-        {/* Related work by shared story tag */}
-        {related.length ? (
-          <section aria-label="Related work" className="border-t border-line">
-            <h2 className="px-6 pt-8 font-mono text-[11px] uppercase tracking-[0.12em] text-soft sm:px-11">
-              More like this
-            </h2>
-            <div className="mt-6 grid grid-cols-1 border-t border-line sm:grid-cols-3">
-              {related.map((r) => (
-                <Link
-                  key={r.slug}
-                  href={`/work/${r.slug}`}
-                  className="group flex min-h-[150px] flex-col border-b border-r border-line px-6 py-5 transition-colors hover:bg-smalt hover:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white sm:px-8"
-                >
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft group-hover:text-white/85">
-                    {kindLabel(r.kind)}
-                  </span>
-                  <span className="mt-auto text-[16px] font-semibold leading-snug">
-                    {r.title}
-                  </span>
-                  {r.subtitle ? (
-                    <span className="mt-1 font-mono text-[10px] text-soft group-hover:text-white/90">
-                      {r.subtitle}
-                    </span>
-                  ) : null}
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
       </div>
     </article>
   )

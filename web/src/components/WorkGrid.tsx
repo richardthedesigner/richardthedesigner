@@ -76,6 +76,34 @@ export function WorkGrid({
     [work, filter],
   )
 
+  // The span pattern rarely divides evenly into the 3-col (lg) and 2-col (sm)
+  // grids, which would leave blank holes on the final row. Work out the
+  // remainder per breakpoint and square it off with one colophon cell.
+  const {lgGap, smGap} = useMemo(() => {
+    const UNITS_LG: Record<CellVariant, number> = {feature: 4, tall: 2, wide: 2, text: 1}
+    const UNITS_SM: Record<CellVariant, number> = {feature: 2, tall: 1, wide: 2, text: 1}
+    let lg = 0
+    let sm = 0
+    work.forEach((_, i) => {
+      const v = variantFor(i, featuredCount)
+      lg += UNITS_LG[v]
+      sm += UNITS_SM[v]
+    })
+    const stats = Object.keys(STAT_CELLS).filter((k) => Number(k) < work.length).length
+    lg += stats
+    sm += stats
+    return {lgGap: (3 - (lg % 3)) % 3, smGap: (2 - (sm % 2)) % 2}
+  }, [work, featuredCount])
+
+  const fillerClass = [
+    'cell hidden flex-col justify-end gap-0.5 border-r border-b border-line bg-paper px-3.5 py-3',
+    smGap === 1 ? 'sm:flex' : '',
+    lgGap === 0 ? 'lg:hidden' : 'lg:flex',
+    lgGap === 2 ? 'lg:col-span-2' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div className="grid flex-1 grid-cols-1 md:grid-cols-[minmax(320px,36%)_1fr]">
       {/* ---- Masthead (smalt) ---- */}
@@ -210,6 +238,12 @@ export function WorkGrid({
             </Fragment>
           )
         })}
+        {lgGap > 0 || smGap > 0 ? (
+          <p aria-hidden="true" className={fillerClass}>
+            <span className="font-mono text-[10px] text-soft">richardthedesigner.com</span>
+            <span className="font-mono text-[10px] text-soft">Edinburgh · making things since 2014</span>
+          </p>
+        ) : null}
       </section>
     </div>
   )

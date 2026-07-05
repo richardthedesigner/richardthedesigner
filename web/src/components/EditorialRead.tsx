@@ -47,6 +47,39 @@ function Heading({title, light = false}: {title: string | null; light?: boolean}
   )
 }
 
+type SectionPlan = {
+  section: ReadSection
+  treatment: Treatment
+  /** For prose sections: 0 split, 1 band, 2 mirrored split. */
+  flavour: number
+  image: StageImage | null
+  quotes: PTBlock[]
+  blocks: PTBlock[]
+}
+
+// Pure planning pass: decides each section's treatment, image and quote
+// extraction up front so rendering below is a straight map.
+function planSections(sections: ReadSection[], images: StageImage[]): SectionPlan[] {
+  const plans: SectionPlan[] = []
+  let proseIdx = 0
+  let imageIdx = 0
+  for (const section of sections) {
+    const treatment = classify(section)
+    const quotes = section.blocks.filter((b) => b._type === 'block' && b.style === 'blockquote')
+    const blocks = section.blocks.filter((b) => !(b._type === 'block' && b.style === 'blockquote'))
+    let flavour = -1
+    let image: StageImage | null = null
+    if (treatment === 'prose') {
+      flavour = proseIdx % 3
+      proseIdx += 1
+      image = images.length ? images[imageIdx % images.length] : null
+      imageIdx += 1
+    }
+    plans.push({section, treatment, flavour, image, quotes, blocks})
+  }
+  return plans
+}
+
 export function EditorialRead({
   sections,
   images,
@@ -54,18 +87,11 @@ export function EditorialRead({
   sections: ReadSection[]
   images: StageImage[]
 }) {
-  let proseIdx = 0
-  let imageIdx = 0
-  const nextImage = () => (images.length ? images[imageIdx++ % images.length] : null)
+  const plans = planSections(sections, images)
 
   return (
     <div>
-      {sections.map((section, i) => {
-        const treatment = classify(section)
-        // Pull quotes leave the section and become full-bleed bands after it.
-        const quotes = section.blocks.filter((b) => b._type === 'block' && b.style === 'blockquote')
-        const blocks = section.blocks.filter((b) => !(b._type === 'block' && b.style === 'blockquote'))
-
+      {plans.map(({section, treatment, flavour, image, quotes, blocks}, i) => {
         let rendered: React.ReactNode
         if (treatment === 'cards') {
           rendered = <CardsSection i={i} section={section} blocks={blocks} />
@@ -75,21 +101,18 @@ export function EditorialRead({
           rendered = <ChipsSection i={i} section={section} blocks={blocks} />
         } else if (treatment === 'closer') {
           rendered = <CloserSection i={i} section={section} blocks={blocks} />
+        } else if (flavour === 1) {
+          rendered = <BandSection i={i} section={section} blocks={blocks} image={image} />
         } else {
-          const flavour = proseIdx % 3
-          proseIdx += 1
-          rendered =
-            flavour === 1 ? (
-              <BandSection i={i} section={section} blocks={blocks} image={nextImage()} />
-            ) : (
-              <SplitSection
-                i={i}
-                section={section}
-                blocks={blocks}
-                image={nextImage()}
-                mirrored={flavour === 2}
-              />
-            )
+          rendered = (
+            <SplitSection
+              i={i}
+              section={section}
+              blocks={blocks}
+              image={image}
+              mirrored={flavour === 2}
+            />
+          )
         }
 
         return (

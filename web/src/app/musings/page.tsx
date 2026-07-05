@@ -5,6 +5,7 @@ import {client} from '@/sanity/client'
 import {MUSINGS_INDEX_QUERY} from '@/sanity/queries'
 import {tagTitle} from '@/lib/tags'
 import {formatDate} from '@/lib/date'
+import {PageNav} from '@/components/PageNav'
 
 export const revalidate = 60
 
@@ -18,7 +19,9 @@ export default async function MusingsPage() {
   const musings = await client.fetch(MUSINGS_INDEX_QUERY)
 
   return (
-    <div className="mx-auto w-full max-w-[860px] px-6 py-14 sm:px-8">
+    <>
+      <PageNav current="musings" />
+      <div className="mx-auto w-full max-w-[860px] px-6 py-14 sm:px-8">
       <header className="border-b border-line pb-6">
         <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-soft">
           Thinking
@@ -76,6 +79,7 @@ export default async function MusingsPage() {
           ))}
         </ul>
       )}
-    </div>
+      </div>
+    </>
   )
 }

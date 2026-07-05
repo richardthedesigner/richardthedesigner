@@ -29,8 +29,10 @@ export function FlapText({
 
   useEffect(() => {
     if (reduced) {
-      setDisplay(text)
-      return
+      // Settle instantly (via rAF so the state write isn't synchronous in
+      // the effect), covering a mid-animation switch to reduced motion.
+      const settle = requestAnimationFrame(() => setDisplay(text))
+      return () => cancelAnimationFrame(settle)
     }
     let raf = 0
     let start: number | null = null

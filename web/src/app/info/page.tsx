@@ -2,6 +2,7 @@ import type {Metadata} from 'next'
 
 import {client} from '@/sanity/client'
 import {INFO_QUERY} from '@/sanity/queries'
+import {PageNav} from '@/components/PageNav'
 
 export const revalidate = 60
 
@@ -44,7 +45,9 @@ export default async function InfoPage() {
   ])
 
   return (
-    <div className="mx-auto w-full max-w-[760px] px-6 py-16 sm:px-8 sm:py-24">
+    <>
+      <PageNav current="info" />
+      <div className="mx-auto w-full max-w-[760px] px-6 py-16 sm:px-8 sm:py-24">
       <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-soft">
         Info
       </p>
@@ -179,6 +182,7 @@ export default async function InfoPage() {
           </ul>
         </section>
       ) : null}
-    </div>
+      </div>
+    </>
   )
 }
