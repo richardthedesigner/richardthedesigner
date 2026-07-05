@@ -73,7 +73,11 @@ export const FALLBACK_IMAGES: Record<string, FallbackImage> = {
     url: u('photo-1608531078362-d1dcb855bc9f'),
     alt: 'Minimal abstract marker on an empty field',
   },
-  flymynight: {
+  flymyairport: {
+    url: u('photo-1436491865332-7a61a109cc05'),
+    alt: 'Aircraft wing above the clouds',
+  },
+  designmynight: {
     url: u('photo-1509413031665-0d52b03f5cde'),
     alt: 'Light trails across a city at night',
   },
@@ -197,7 +201,8 @@ const SLUG_THEMES: Record<string, Theme> = {
   'realise-offices': 'office',
   causewayside: 'edinburgh',
   iamhere: 'abstract',
-  flymynight: 'cinema',
+  flymyairport: 'abstract',
+  designmynight: 'ordering',
   'cinema-design': 'cinema',
   'project-50': 'print',
   'qikserve-payments': 'ordering',
