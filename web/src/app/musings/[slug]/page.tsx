@@ -5,6 +5,7 @@ import {notFound} from 'next/navigation'
 import {client} from '@/sanity/client'
 import {MUSING_QUERY, MUSING_SLUGS_QUERY} from '@/sanity/queries'
 import {formatDate} from '@/lib/date'
+import {SITE_URL, jsonLd} from '@/lib/site'
 import {PortableTextBody} from '@/components/PortableTextBody'
 
 export const revalidate = 60
@@ -24,7 +25,11 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
   return {
     title: musing.title,
     description: musing.excerpt ?? undefined,
-    openGraph: {title: musing.title ?? undefined, type: 'article'},
+    openGraph: {
+      title: musing.title ?? undefined,
+      description: musing.excerpt ?? undefined,
+      type: 'article',
+    },
     alternates: {canonical: `/musings/${slug}`},
   }
 }
@@ -34,21 +39,19 @@ export default async function MusingPage({params}: Params) {
   const musing = await client.fetch(MUSING_QUERY, {slug})
   if (!musing) notFound()
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
   return (
     <article className="bg-cream">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             '@context': 'https://schema.org',
             '@type': 'Article',
             headline: musing.title,
             description: musing.excerpt ?? undefined,
-            url: `${siteUrl}/musings/${slug}`,
+            url: `${SITE_URL}/musings/${slug}`,
             datePublished: musing.publishedAt ?? undefined,
-            author: {'@id': `${siteUrl}/#richard`},
+            author: {'@id': `${SITE_URL}/#richard`},
           }),
         }}
       />

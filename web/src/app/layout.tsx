@@ -3,6 +3,7 @@ import {Fraunces, IBM_Plex_Sans, IBM_Plex_Mono} from 'next/font/google'
 
 import {client} from '@/sanity/client'
 import {LAYOUT_QUERY} from '@/sanity/queries'
+import {SITE_URL, jsonLd} from '@/lib/site'
 import {SiteFooter} from '@/components/SiteFooter'
 import {Ticker} from '@/components/Ticker'
 import './globals.css'
@@ -26,7 +27,6 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const DEFAULT_TICKER = [
   'Richard Murphy',
   'Product Design & Platform Strategy',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     template: '%s — Richard Murphy',
   },
   description:
-    'Product design and platform strategy. Platforms operated at global scale, systems built to be AI-native.',
+    'Richard Murphy is a product designer and design leader in Edinburgh. Six years leading design for hospitality platforms used in 8,000+ locations across 42 countries; now leading alliances at TBSCG, a trustee of Euan’s Guide, and building AI-native products.',
   openGraph: {
     type: 'website',
     siteName: 'Richard Murphy',
@@ -56,7 +56,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const settings = await client.fetch(LAYOUT_QUERY)
+  // The shell must never 500 because the CMS blinked; everything it needs has
+  // a static fallback.
+  const settings = await client.fetch(LAYOUT_QUERY).catch(() => null)
   const tickerItems =
     settings?.tickerItems && settings.tickerItems.length
       ? settings.tickerItems
@@ -71,21 +73,23 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLd({
               '@context': 'https://schema.org',
               '@graph': [
                 {
                   '@type': 'Person',
                   '@id': `${SITE_URL}/#richard`,
                   name: 'Richard Murphy',
+                  alternateName: 'Richard the Designer',
                   jobTitle: 'Product Designer & Design Leader',
                   description:
-                    'Product design and platform strategy. Formerly Head of Product Design at QikServe and Access Group; founder of Orson, an AI-native venture.',
+                    'Product designer and design leader. Formerly Head of Product Design at QikServe and Hospitality UX Lead at Access Group; now Alliances Lead at TBSCG, a trustee of the disabled access charity Euan’s Guide, and founder of Orson, an AI-native venture.',
                   email: settings?.contactEmail
                     ? `mailto:${settings.contactEmail}`
                     : undefined,
                   address: {'@type': 'PostalAddress', addressLocality: 'Edinburgh', addressCountry: 'GB'},
                   url: SITE_URL,
+                  sameAs: ['https://github.com/richardthedesigner'],
                 },
                 {
                   '@type': 'WebSite',

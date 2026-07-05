@@ -9,7 +9,9 @@ import {fallbackFor} from '@/lib/fallbackImages'
 import {Media, type MediaLike} from '@/components/Media'
 
 function cardMedia(work: WorkCard): MediaLike | null {
-  if (work.heroMedia) return work.heroMedia
+  // A heroMedia object saved without an actual asset shouldn't suppress the
+  // fallback (it would render nothing).
+  if (work.heroMedia?.image || work.heroMedia?.videoUrl) return work.heroMedia
   const fb = fallbackFor(work.slug)
   return fb ? {kind: 'image', alt: fb.alt, externalUrl: fb.url} : null
 }
@@ -29,6 +31,7 @@ const SENTENCE_WORDS: Record<(typeof STORY_TAGS)[number]['value'], string> = {
   systems: 'design',
   transform: 'transform',
   craft: 'craft',
+  play: 'play',
 }
 
 export function WorkGrid({
@@ -96,10 +99,13 @@ export function WorkGrid({
           <span className="text-white/90">.</span>
         </p>
 
-        {/* Preview / intro blurb (text only; the image lives in the backdrop) */}
-        <div className="relative mt-6 flex-1">
+        {/* Preview / intro blurb (text only; the image lives in the backdrop).
+            On md+ the aside is h-screen and this block sinks to the bottom via
+            justify-end; in normal flow (not absolute) so it can never overlap
+            the headline, whatever the viewport height. */}
+        <div className="mt-6 md:flex md:min-h-0 md:flex-1 md:flex-col md:justify-end">
           {preview ? (
-            <div className="absolute inset-x-0 bottom-0 animate-[fade-up_0.3s_ease]">
+            <div className="animate-[fade-up_0.3s_ease]">
               <p className="font-mono text-[11px] text-white/85">
                 {kindLabel(preview._type)}
                 {preview.subtitle ? ` · ${preview.subtitle}` : ''}
@@ -114,7 +120,7 @@ export function WorkGrid({
               ) : null}
             </div>
           ) : (
-            <p className="absolute bottom-0 max-w-[34ch] text-sm text-white/90">
+            <p className="max-w-[34ch] text-sm text-white/90">
               {intro ||
                 'Platforms operated at global scale. Systems built to be AI-native. Years of making the thing, by hand.'}
             </p>
@@ -214,6 +220,16 @@ function WorkCellLink({
       <span className="absolute top-3 right-3.5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft group-hover:text-white/85 group-focus-within:text-white/85">
         {kindLabel(work._type)}
       </span>
+      {/* Touch has no hover reveal, so cells carry their imagery directly
+          below md; on md+ the preview image lives in the masthead backdrop. */}
+      {cardMedia(work) ? (
+        <span
+          aria-hidden="true"
+          className="relative -mx-3.5 mt-4 mb-3 block aspect-[16/9] overflow-hidden md:hidden"
+        >
+          <Media media={cardMedia(work)} fill width={640} sizes="100vw" />
+        </span>
+      ) : null}
       <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.12] tracking-[-0.012em]">
         {work.title}
       </span>

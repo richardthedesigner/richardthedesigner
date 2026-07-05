@@ -102,15 +102,17 @@ export function Media({
   // Image
   if (media.image) {
     const url = urlForImage(media.image).width(width).url()
-    const url2x = urlForImage(media.image)
-      .width(width * 2)
-      .url()
+    // `sizes` is only valid alongside width (w) descriptors — with x
+    // descriptors browsers ignore it entirely.
+    const srcSet = [Math.round(width / 2), width, width * 2]
+      .map((w) => `${urlForImage(media.image!).width(w).url()} ${w}w`)
+      .join(', ')
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
-        srcSet={`${url} 1x, ${url2x} 2x`}
-        sizes={sizes}
+        srcSet={srcSet}
+        sizes={sizes ?? `${width}px`}
         alt={alt}
         className={base}
         loading={priority ? 'eager' : 'lazy'}

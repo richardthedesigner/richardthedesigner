@@ -19,13 +19,15 @@ export function Metrics({metrics}: {metrics: MetricItem[]}) {
   return (
     <dl className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-px border-b border-line bg-line">
       {metrics.map((m) => (
-        <div key={m._key} className="bg-paper p-6">
-          <dd className="text-[clamp(28px,3vw,44px)] font-bold tracking-[-0.02em] text-smalt">
+        // dt must precede dd in the DOM (spec + screen-reader pairing);
+        // CSS `order` keeps the big value visually above its label.
+        <div key={m._key} className="flex flex-col bg-paper p-6">
+          <dt className="order-2 mt-1 font-mono text-xs text-soft">{m.label}</dt>
+          <dd className="order-1 text-[clamp(28px,3vw,44px)] font-bold tracking-[-0.02em] text-smalt">
             <CountUp value={m.value ?? ''} />
           </dd>
-          <dt className="mt-1 font-mono text-xs text-soft">{m.label}</dt>
           {m.note ? (
-            <p className="mt-1 font-mono text-[11px] text-soft/80">{m.note}</p>
+            <p className="order-3 mt-1 font-mono text-[11px] text-soft/80">{m.note}</p>
           ) : null}
         </div>
       ))}

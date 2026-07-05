@@ -5,6 +5,7 @@ import {client} from '@/sanity/client'
 import {urlForImage} from '@/sanity/image'
 import {WORK_QUERY, WORK_ORDER_QUERY, WORK_SLUGS_QUERY} from '@/sanity/queries'
 import {kindLabel} from '@/lib/tags'
+import {SITE_URL, jsonLd} from '@/lib/site'
 import {fallbackFor, fallbackGalleryFor} from '@/lib/fallbackImages'
 import {ArticleRail} from '@/components/ArticleRail'
 import {Media, type MediaLike} from '@/components/Media'
@@ -30,9 +31,14 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
   const description =
     work.standfirst ?? work.description ?? `${kindLabel(work._type)} by Richard Murphy.`
   const ogSource = work.heroMedia?.image ?? work.heroMedia?.poster
+  const fb = fallbackFor(slug)
+  // Fallback OG images get re-cropped to the declared 1200x630 so scrapers
+  // that trust the dimensions don't letterbox or stretch them.
   const ogImage = ogSource
     ? urlForImage(ogSource).width(1200).height(630).fit('crop').url()
-    : fallbackFor(slug)?.url
+    : fb
+      ? `${fb.url.split('?')[0]}?auto=format&fit=crop&w=1200&h=630&q=80`
+      : undefined
 
   return {
     title: work.title,
@@ -64,10 +70,12 @@ export default async function WorkPage({params}: Params) {
   const lede = work.standfirst ?? work.description ?? null
   const railSubtitle = work.sector ?? work.client ?? work.role ?? null
 
-  // Hero media: real Sanity asset wins, themed placeholder otherwise.
+  // Hero media: real Sanity asset wins, themed placeholder otherwise. A
+  // heroMedia object saved in the Studio without an actual asset is treated
+  // as absent, so it can't suppress the fallback and render an empty hero.
   const fb = fallbackFor(slug)
   const heroMedia =
-    work.heroMedia ??
+    (work.heroMedia?.image || work.heroMedia?.videoUrl ? work.heroMedia : null) ??
     (fb ? {kind: 'image' as const, alt: fb.alt, externalUrl: fb.url} : null)
 
   // Layout: an editor-chosen `shape` wins; otherwise a deterministic
@@ -101,20 +109,18 @@ export default async function WorkPage({params}: Params) {
     note: m.note,
   }))
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
   return (
     <article className="grid grid-cols-1 md:grid-cols-[minmax(280px,30%)_1fr]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             '@context': 'https://schema.org',
             '@type': 'CreativeWork',
             name: work.title,
             description: lede ?? undefined,
-            url: `${siteUrl}/work/${slug}`,
-            creator: {'@id': `${siteUrl}/#richard`},
+            url: `${SITE_URL}/work/${slug}`,
+            creator: {'@id': `${SITE_URL}/#richard`},
             about: work.sector ?? undefined,
             dateCreated: work.year ? String(work.year) : undefined,
             keywords: work.tags?.join(', ') || undefined,

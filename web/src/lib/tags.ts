@@ -1,4 +1,4 @@
-// The five story tags. Mirrors studio/schema/shared.ts (one source of truth in
+// The six story tags. Mirrors studio/schema/shared.ts (one source of truth in
 // the CMS; this is the presentation copy + ordering for the frontend filter).
 export const STORY_TAGS = [
   {value: 'operate', title: 'Operate at scale', short: 'Operate'},
@@ -6,6 +6,7 @@ export const STORY_TAGS = [
   {value: 'systems', title: 'Design the system', short: 'Systems'},
   {value: 'transform', title: 'Transform the org', short: 'Transform'},
   {value: 'craft', title: 'Keep craft visible', short: 'Craft'},
+  {value: 'play', title: 'Play in public', short: 'Play'},
 ] as const
 
 export type StoryTag = (typeof STORY_TAGS)[number]['value']

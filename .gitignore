@@ -26,3 +26,6 @@ studio/.sanity/
 *.docx
 sanity-schema/content-drafts.md
 Portfolio-Content-Inventory.docx
+
+# CVs are private working material
+CV-*.md

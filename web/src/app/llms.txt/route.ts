@@ -1,6 +1,5 @@
 import {client} from '@/sanity/client'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+import {SITE_URL} from '@/lib/site'
 
 export const revalidate = 3600
 
@@ -59,7 +58,7 @@ export async function GET() {
 
 > ${s?.intro ?? 'Portfolio of Richard Murphy, product designer and design leader.'}
 
-This is the portfolio of Richard Murphy, a product designer and design leader based in ${s?.locations?.[0] ?? 'Edinburgh, UK'}. Headline facts: six years as Head of Product Design at QikServe and Access Group; self-service ordering platform used in 8,000+ locations across 42 countries with 130+ integrations and over $1bn in value handled; design team grown from one to five across the UK and Brazil; WCAG 2.1 AA accessibility delivered as standard; now building Orson, an independent AI-native venture, alongside advisory work.
+This is the portfolio of Richard Murphy, a product designer and design leader based in ${s?.locations?.[0] ?? 'Edinburgh, UK'}. Headline facts: six years leading design across QikServe and Access Group (Head of Product Design, then Hospitality UX Lead); self-service ordering platform grown from ~800 to 8,000+ locations across 42 countries with 100+ integrations and more than $1bn processed annually; design team grown from one to five across the UK and Brazil; WCAG 2.1 AA accessibility delivered as standard. Now Alliances Lead at TBSCG, a trustee of the disabled access charity Euan's Guide, and building Orson, an independent AI-native venture.
 
 Contact: ${s?.contactEmail ?? 'via the site'}
 Site: ${SITE_URL}
@@ -85,7 +84,7 @@ ${data.musings.map((e) => line(e, 'musings', e.excerpt)).join('\n')}
 
 - Some imagery is placeholder while real project artefacts are added; the written content is authoritative.
 - Client names on certain enterprise work are withheld deliberately (confidentiality); details available on request via the contact email.
-- Metrics quoted on case studies (locations, countries, integrations, value handled) are platform-level figures for the QikServe / Access estate.
+- Metrics quoted on case studies (locations, countries, integrations, value processed) are platform-level figures for the QikServe / Access estate.
 `
 
   return new Response(md, {
