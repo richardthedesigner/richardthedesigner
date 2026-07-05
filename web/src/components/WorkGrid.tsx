@@ -74,7 +74,7 @@ export function WorkGrid({
         <p
           role="group"
           aria-label="Filter the work by theme"
-          className="mt-8 text-[clamp(22px,2.3vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em]"
+          className="mast-enter mt-8 text-[clamp(22px,2.3vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em]"
         >
           <span className="text-white/90">How I </span>
           <FilterWord
@@ -103,7 +103,10 @@ export function WorkGrid({
             On md+ the aside is h-screen and this block sinks to the bottom via
             justify-end; in normal flow (not absolute) so it can never overlap
             the headline, whatever the viewport height. */}
-        <div className="mt-6 md:flex md:min-h-0 md:flex-1 md:flex-col md:justify-end">
+        <div
+          className="mast-enter mt-6 md:flex md:min-h-0 md:flex-1 md:flex-col md:justify-end"
+          style={{animationDelay: '0.14s'}}
+        >
           {preview ? (
             <div className="animate-[fade-up_0.3s_ease]">
               <p className="font-mono text-[11px] text-white/85">
@@ -151,13 +154,14 @@ export function WorkGrid({
 
       {/* ---- Grid ---- */}
       <section aria-label="Selected work" className="work-grid grid grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
-        {work.map((w) => {
+        {work.map((w, i) => {
           const match = filter === 'all' || (w.tags ?? []).includes(filter)
           return (
             <WorkCellLink
               key={w._id}
               work={w}
               dimmed={!match}
+              enterDelay={Math.min(i, 11) * 45}
               onPreview={() => setPreview(w)}
               onClearPreview={() => setPreview((p) => (p === w ? null : p))}
             />
@@ -196,11 +200,13 @@ function FilterWord({
 function WorkCellLink({
   work,
   dimmed,
+  enterDelay,
   onPreview,
   onClearPreview,
 }: {
   work: WorkCard
   dimmed: boolean
+  enterDelay: number
   onPreview: () => void
   onClearPreview: () => void
 }) {
@@ -213,7 +219,8 @@ function WorkCellLink({
       onMouseLeave={onClearPreview}
       onFocus={onPreview}
       onBlur={onClearPreview}
-      className={`cell group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,background-color,color] duration-300 hover:bg-smalt hover:text-white focus-within:bg-smalt focus-within:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
+      style={{animationDelay: `${enterDelay}ms`}}
+      className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,background-color,color] duration-300 hover:bg-smalt hover:text-white focus-within:bg-smalt focus-within:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
         dimmed ? 'pointer-events-none opacity-30' : ''
       }`}
     >

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import {tagTitle, num} from '@/lib/tags'
+import {RailToc} from '@/components/RailToc'
 
 type NavItem = {slug: string | null; title: string | null} | null
 
@@ -9,6 +10,7 @@ export function ArticleRail({
   title,
   subtitle,
   tags,
+  sections,
   prev,
   next,
 }: {
@@ -16,6 +18,7 @@ export function ArticleRail({
   title: string
   subtitle?: string | null
   tags?: string[] | null
+  sections?: {key: string; title: string | null}[]
   prev: NavItem
   next: NavItem
 }) {
@@ -53,6 +56,8 @@ export function ArticleRail({
           ))}
         </ul>
       ) : null}
+
+      {sections?.length ? <RailToc sections={sections} /> : null}
 
       <nav
         aria-label="Work navigation"

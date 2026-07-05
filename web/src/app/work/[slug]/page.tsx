@@ -1,4 +1,5 @@
 import type {Metadata} from 'next'
+import Link from 'next/link'
 import {notFound} from 'next/navigation'
 
 import {client} from '@/sanity/client'
@@ -6,12 +7,27 @@ import {urlForImage} from '@/sanity/image'
 import {WORK_QUERY, WORK_ORDER_QUERY, WORK_SLUGS_QUERY} from '@/sanity/queries'
 import {kindLabel} from '@/lib/tags'
 import {SITE_URL, jsonLd} from '@/lib/site'
+import {splitBody, type PTBlock} from '@/lib/portable'
 import {fallbackFor, fallbackGalleryFor} from '@/lib/fallbackImages'
 import {ArticleRail} from '@/components/ArticleRail'
+import {LongRead, type StageImage} from '@/components/LongRead'
 import {Media, type MediaLike} from '@/components/Media'
 import {Metrics} from '@/components/Metrics'
 import {PortableTextBody} from '@/components/PortableTextBody'
 import {Reveal} from '@/components/Reveal'
+
+// Related work by shared story tag (local untyped query; the typegen'd set
+// doesn't carry this projection).
+const RELATED_QUERY = `*[_type in ["caseStudy", "project"] && defined(slug.current) && slug.current != $slug && count(coalesce(tags, [])[@ in $tags]) > 0] | order(coalesce(order, 100) asc)[0...3]{
+  title, "slug": slug.current, "kind": _type, "subtitle": coalesce(sector, client)
+}`
+
+type RelatedItem = {
+  title: string | null
+  slug: string | null
+  kind: string
+  subtitle: string | null
+}
 
 export const revalidate = 60
 export const dynamicParams = true
@@ -62,6 +78,10 @@ export default async function WorkPage({params}: Params) {
 
   if (!work) notFound()
 
+  const related = await client
+    .fetch<RelatedItem[]>(RELATED_QUERY, {slug, tags: work.tags ?? []})
+    .catch(() => [])
+
   const list = [...(order?.ordered ?? []), ...(order?.extra ?? [])]
   const idx = list.findIndex((w) => w.slug === slug)
   const prev = idx > 0 ? list[idx - 1] : null
@@ -109,6 +129,23 @@ export default async function WorkPage({params}: Params) {
     note: m.note,
   }))
 
+  // Long reads become scrollytelling: sections split at each h2, gallery
+  // imagery cycling on a sticky stage. Short pieces keep the simple flow.
+  const {lede: ledeBlocks, sections} = splitBody((work.body ?? []) as PTBlock[])
+  const scrolly = sections.length >= 3
+  const stage: StageImage[] = scrolly
+    ? (gallery as (MediaLike & {caption?: string | null})[]).map((g) => ({
+        kind: g.kind,
+        alt: g.alt,
+        image: g.image,
+        poster: g.poster,
+        videoUrl: g.videoUrl,
+        lqip: g.lqip,
+        externalUrl: g.externalUrl,
+        caption: g.caption,
+      }))
+    : []
+
   return (
     <article className="grid grid-cols-1 md:grid-cols-[minmax(280px,30%)_1fr]">
       <script
@@ -132,6 +169,7 @@ export default async function WorkPage({params}: Params) {
         title={work.title ?? 'Untitled'}
         subtitle={railSubtitle}
         tags={work.tags}
+        sections={scrolly ? sections.map(({key, title}) => ({key, title})) : undefined}
         prev={prev}
         next={next}
       />
@@ -238,7 +276,18 @@ export default async function WorkPage({params}: Params) {
         ) : null}
 
         {/* Narrative */}
-        {work.body?.length ? (
+        {scrolly ? (
+          <>
+            {ledeBlocks.length ? (
+              <div className="px-6 pt-12 sm:px-11">
+                <div className="max-w-[760px] [&_p]:max-w-[58ch] [&_p]:text-[clamp(18px,1.7vw,22px)] [&_p]:leading-[1.55]">
+                  <PortableTextBody value={ledeBlocks as never} variant="article" />
+                </div>
+              </div>
+            ) : null}
+            <LongRead sections={sections} stage={stage} />
+          </>
+        ) : work.body?.length ? (
           <div className="px-6 py-12 sm:px-11">
             <div className="mx-auto max-w-[760px]">
               <PortableTextBody value={work.body} variant="article" />
@@ -246,8 +295,8 @@ export default async function WorkPage({params}: Params) {
           </div>
         ) : null}
 
-        {/* Gallery (real images, or themed placeholders until artefacts land) */}
-        {gallery.length ? (
+        {/* Gallery (scrolly pages show these on the stage instead) */}
+        {!scrolly && gallery.length ? (
           <section
             aria-label="Gallery"
             className="grid grid-cols-1 gap-3.5 px-6 pb-14 sm:grid-cols-2 sm:px-11 [&>*:nth-child(3n)]:sm:col-span-2"
@@ -262,6 +311,36 @@ export default async function WorkPage({params}: Params) {
                 ) : null}
               </Reveal>
             ))}
+          </section>
+        ) : null}
+
+        {/* Related work by shared story tag */}
+        {related.length ? (
+          <section aria-label="Related work" className="border-t border-line">
+            <h2 className="px-6 pt-8 font-mono text-[11px] uppercase tracking-[0.12em] text-soft sm:px-11">
+              More like this
+            </h2>
+            <div className="mt-6 grid grid-cols-1 border-t border-line sm:grid-cols-3">
+              {related.map((r) => (
+                <Link
+                  key={r.slug}
+                  href={`/work/${r.slug}`}
+                  className="group flex min-h-[150px] flex-col border-b border-r border-line px-6 py-5 transition-colors hover:bg-smalt hover:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white sm:px-8"
+                >
+                  <span className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft group-hover:text-white/85">
+                    {kindLabel(r.kind)}
+                  </span>
+                  <span className="mt-auto text-[16px] font-semibold leading-snug">
+                    {r.title}
+                  </span>
+                  {r.subtitle ? (
+                    <span className="mt-1 font-mono text-[10px] text-soft group-hover:text-white/90">
+                      {r.subtitle}
+                    </span>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
           </section>
         ) : null}
       </div>
