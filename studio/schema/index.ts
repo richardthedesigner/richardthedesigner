@@ -6,6 +6,8 @@ import {caseStudy} from './documents/caseStudy'
 import {project} from './documents/project'
 import {musing} from './documents/musing'
 import {siteSettings} from './documents/siteSettings'
+import {clientVignette} from './documents/clientVignette'
+import {advisoryRole} from './documents/advisoryRole'
 
 import {mediaItem} from './objects/mediaItem'
 import {metric} from './objects/metric'
@@ -17,6 +19,8 @@ export const schemaTypes = [
   project,
   musing,
   siteSettings,
+  clientVignette,
+  advisoryRole,
   // objects
   mediaItem,
   metric,
