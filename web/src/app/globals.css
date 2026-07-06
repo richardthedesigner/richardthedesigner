@@ -172,59 +172,147 @@ body {
 }
 
 /* ===========================================================================
-   Split-flap board. Each grid square is a physical flap: the board loads as a
-   matrix of blank "off" panels, and every panel folds down about its top edge
-   to reveal the tile behind it, staggered in reading order so the reveal
-   sweeps across the board. The flap lives in the SSR markup over real content,
-   so no-JS and reduced-motion visitors simply see the finished tile.
+   Split-flap board. Each grid square is a real Solari split-flap: a panel split
+   in half at a centre seam. The top leaf is hinged at the seam and falls
+   forward, flap after flap (a clatter), while the bottom half holds — then on
+   the last flap both leaves clear to reveal the tile behind. Staggered in
+   reading order so the reveal sweeps across the board. The whole flap lives in
+   the SSR markup over real content, so no-JS and reduced-motion visitors simply
+   see the finished tile.
    =========================================================================== */
 .flap-host {
-  perspective: 900px;
+  perspective: 340px;
 }
 .tile-flap {
   position: absolute;
   inset: 0;
   z-index: 30;
   pointer-events: none; /* decorative: never intercepts the tile's link */
-  transform-origin: center top;
-  background: var(--color-ink);
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  will-change: transform, opacity;
-  animation: tile-flap-fall 0.52s cubic-bezier(0.5, 0.02, 0.3, 1) both;
+  perspective: 340px;
+  /* Guarantee the whole overlay is gone once the reveal completes — no stray
+     seam or leaf edge can linger over the tile. */
+  animation: flap-done 0.72s var(--flap-delay, 0ms) step-end both;
 }
-/* Centre seam + a faint sheen so the blank panel reads as a mechanical flap. */
-.tile-flap::before {
-  content: '';
+@keyframes flap-done {
+  0% {
+    visibility: visible;
+  }
+  99.9% {
+    visibility: visible;
+  }
+  100% {
+    visibility: hidden;
+  }
+}
+.tile-flap > span {
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
-  height: 1px;
-  margin-top: -0.5px;
-  background: rgba(255, 255, 255, 0.09);
+  height: 50%;
+  background: #16171d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
 }
-.tile-flap::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(0, 0, 0, 0.18)
-  );
+/* Bottom half — holds through the clatter, then folds away to reveal the tile.
+   The top-edge highlight is the lower lip of the centre seam. */
+.flap-lower {
+  bottom: 0;
+  transform-origin: center top;
+  background: linear-gradient(180deg, #191b22, #0f1015);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: flap-lower 0.72s var(--flap-delay, 0ms) both;
 }
-@keyframes tile-flap-fall {
+/* Static top half behind the moving leaf — darker than the leaf so each fold
+   reads, then folds up about the seam to reveal the tile's top half. Its bottom
+   edge is the upper lip of the centre seam (so the seam clears with the leaf). */
+.flap-upper-back {
+  top: 0;
+  background: #0e0f14;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  transform-origin: center bottom;
+  animation: flap-back 0.72s var(--flap-delay, 0ms) both;
+}
+/* The moving top leaf: hinged at the seam, falls and resets, flap after flap.
+   A lit top edge + a shadow cast at the seam make each fold pop against the
+   darker backing behind it. */
+.flap-upper {
+  top: 0;
+  transform-origin: center bottom;
+  background: linear-gradient(180deg, #2b2e3a 0%, #191b23 52%, #0d0e13 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 9px rgba(0, 0, 0, 0.6);
+  animation: flap-upper 0.72s var(--flap-delay, 0ms) both;
+}
+/* Top leaf: four quick flaps (each an ease-in fall, then an instant reset via
+   step-end), then a final fall that stays down as the leaf clears. Reveal is by
+   transform + visibility only — no opacity (the CSS minifier strips opacity:1
+   from keyframes, which would fade the whole panel and leak the tile through). */
+@keyframes flap-upper {
   0% {
     transform: rotateX(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.4);
   }
-  62% {
-    transform: rotateX(-90deg);
-    opacity: 1;
+  15% {
+    transform: rotateX(90deg);
+    animation-timing-function: step-end;
+  }
+  15.01% {
+    transform: rotateX(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.4);
+  }
+  32% {
+    transform: rotateX(90deg);
+    animation-timing-function: step-end;
+  }
+  32.01% {
+    transform: rotateX(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.4);
+  }
+  49% {
+    transform: rotateX(90deg);
+    animation-timing-function: step-end;
+  }
+  49.01% {
+    transform: rotateX(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.4);
+  }
+  70% {
+    transform: rotateX(90deg);
   }
   100% {
-    transform: rotateX(-90deg);
-    opacity: 0;
+    transform: rotateX(90deg);
+    visibility: hidden;
+  }
+}
+/* Top backing: holds flat through the clatter, then folds up about the seam
+   (mirroring the bottom folding down) so the panel splits open on the tile. */
+@keyframes flap-back {
+  0% {
+    transform: rotateX(0deg);
+    animation-timing-function: step-end;
+  }
+  70% {
+    transform: rotateX(0deg);
+    animation-timing-function: cubic-bezier(0.35, 0, 0.7, 0.5);
+  }
+  100% {
+    transform: rotateX(-88deg);
+    visibility: hidden;
+  }
+}
+/* Bottom half: holds through the clatter, then folds down about the seam
+   (rotateX) to reveal the tile — a fold, not a fade. */
+@keyframes flap-lower {
+  0% {
+    transform: rotateX(0deg);
+    animation-timing-function: linear;
+  }
+  70% {
+    transform: rotateX(0deg);
+    animation-timing-function: cubic-bezier(0.35, 0, 0.7, 0.5);
+  }
+  100% {
+    transform: rotateX(88deg);
     visibility: hidden;
   }
 }

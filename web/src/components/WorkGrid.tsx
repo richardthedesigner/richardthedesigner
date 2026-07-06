@@ -1,6 +1,6 @@
 'use client'
 
-import {Fragment, useMemo, useState} from 'react'
+import {Fragment, useMemo, useState, type CSSProperties} from 'react'
 import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
@@ -52,9 +52,20 @@ function flapDelay(order: number): string {
   return `${FLAP_BASE_MS + Math.min(order, 26) * FLAP_STEP_MS}ms`
 }
 
-// A blank board panel that flips away to reveal the tile behind it.
+// A blank Solari panel — split at the centre seam — that clatters, then clears
+// to reveal the tile behind it. `--flap-delay` staggers the whole panel.
 function TileFlap({delay}: {delay: string}) {
-  return <span aria-hidden="true" className="tile-flap" style={{animationDelay: delay}} />
+  return (
+    <span
+      aria-hidden="true"
+      className="tile-flap"
+      style={{'--flap-delay': delay} as CSSProperties}
+    >
+      <span className="flap-lower" />
+      <span className="flap-upper-back" />
+      <span className="flap-upper" />
+    </span>
+  )
 }
 
 export function WorkGrid({
