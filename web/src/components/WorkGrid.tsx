@@ -1,12 +1,11 @@
 'use client'
 
-import {Fragment, useEffect, useMemo, useRef, useState} from 'react'
+import {Fragment, useMemo, useState} from 'react'
 import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
 import {STORY_TAGS, kindLabel} from '@/lib/tags'
 import {fallbackFor} from '@/lib/fallbackImages'
-import {SplitFlap} from '@/components/SplitFlap'
 import {Media, type MediaLike} from '@/components/Media'
 
 function cardMedia(work: WorkCard): MediaLike | null {
@@ -25,7 +24,7 @@ type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number] & {
 type Filter = 'all' | (typeof STORY_TAGS)[number]['value']
 
 // Editorial interstitials: proof points that ride the board as their own
-// panels, flapping into place alongside the work. Keyed by the index they
+// panels, flipping into place alongside the work. Keyed by the index they
 // appear AFTER. Values must stay CV-true.
 const STAT_CELLS: Record<number, {value: string; label: string}> = {
   4: {value: '800 → 8,000+', label: 'venues during my tenure'},
@@ -43,17 +42,19 @@ const SENTENCE_WORDS: Record<(typeof STORY_TAGS)[number]['value'], string> = {
   play: 'play',
 }
 
-// The load choreography. `idle` = settled, no flap (repeat visits within a
-// session); `grand` = the once-per-session opening sweep; `quiet` = the brisk
-// re-flap when the filter changes.
-type Mode = 'idle' | 'grand' | 'quiet'
+// The board opens as a matrix of blank "off" panels; each one flips down to
+// reveal its tile, staggered in DOM (reading) order so the reveal sweeps across
+// the grid like a departure board updating. Pure CSS: the flap lives in the
+// SSR markup over real content, so no-JS and reduced-motion just show the tile.
+const FLAP_BASE_MS = 80
+const FLAP_STEP_MS = 42
+function flapDelay(order: number): string {
+  return `${FLAP_BASE_MS + Math.min(order, 26) * FLAP_STEP_MS}ms`
+}
 
-// Grand sweep: panels rise (cell-enter), then a beat later their titles start
-// flapping, cascading left-to-right and down the board.
-function flapDelay(mode: Mode, i: number): number {
-  if (mode === 'grand') return 300 + Math.min(i, 22) * 55
-  if (mode === 'quiet') return Math.min(i, 22) * 12
-  return 0
+// A blank board panel that flips away to reveal the tile behind it.
+function TileFlap({delay}: {delay: string}) {
+  return <span aria-hidden="true" className="tile-flap" style={{animationDelay: delay}} />
 }
 
 export function WorkGrid({
@@ -65,34 +66,6 @@ export function WorkGrid({
 }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [preview, setPreview] = useState<WorkCard | null>(null)
-  const [mode, setMode] = useState<Mode>('idle')
-  const mounted = useRef(false)
-
-  // First paint after mount: run the grand opening once per session; on repeat
-  // visits the board is simply present, settled, no theatre.
-  useEffect(() => {
-    let grand = true
-    try {
-      grand = !sessionStorage.getItem('board-intro')
-      if (grand) sessionStorage.setItem('board-intro', '1')
-    } catch {
-      // Private mode / storage disabled: just play it.
-    }
-    // Deliberate: the opening sweep can only be decided client-side (it reads
-    // sessionStorage and must not run during SSR), so we settle the mode once
-    // after mount rather than during render.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMode(grand ? 'grand' : 'idle')
-  }, [])
-
-  // Re-flap (briskly) whenever the filter changes — but not on the first render.
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true
-      return
-    }
-    setMode('quiet')
-  }, [filter])
 
   const visibleCount = useMemo(
     () =>
@@ -100,6 +73,10 @@ export function WorkGrid({
         .length,
     [work, filter],
   )
+
+  // Running panel counter for the flip stagger, in DOM order (work cells and
+  // the stat interstitials interleaved), so the sweep never jumps around.
+  let order = 0
 
   return (
     <div className="grid flex-1 grid-cols-1 md:grid-cols-[minmax(320px,36%)_1fr]">
@@ -202,7 +179,7 @@ export function WorkGrid({
         </div>
       </aside>
 
-      {/* ---- The board: a uniform matrix of split-flap panels ---- */}
+      {/* ---- The board: a uniform matrix of flip panels ---- */}
       <section
         aria-label="Selected work"
         className="work-grid grid grid-cols-1 auto-rows-[168px] sm:grid-cols-2 sm:auto-rows-[188px] lg:grid-cols-3 lg:auto-rows-[196px]"
@@ -210,36 +187,30 @@ export function WorkGrid({
         {work.map((w, i) => {
           const match = filter === 'all' || (w.tags ?? []).includes(filter)
           const stat = STAT_CELLS[i]
+          const cellDelay = flapDelay(order++)
+          const statDelay = stat ? flapDelay(order++) : ''
           return (
             <Fragment key={w._id}>
               <WorkCellLink
                 work={w}
                 dimmed={!match}
                 eager={i < 6}
-                enterDelay={Math.min(i, 11) * 45}
-                flapKey={`${mode}-${filter}`}
-                flapPlay={mode !== 'idle'}
-                flapDelay={flapDelay(mode, i)}
+                flapDelay={cellDelay}
                 onPreview={() => setPreview(w)}
                 onClearPreview={() => setPreview((p) => (p === w ? null : p))}
               />
               {stat ? (
-                <p className="cell cell-enter flex flex-col justify-end border-r border-b border-line bg-smalt px-3.5 py-3 text-white">
+                <p className="cell flap-host relative flex flex-col justify-end overflow-hidden border-r border-b border-line bg-smalt px-3.5 py-3 text-white">
                   <span className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-white/70">
                     In numbers
                   </span>
                   <span className="mt-1 text-[clamp(22px,1.9vw,30px)] font-bold leading-none tracking-[-0.02em]">
-                    <SplitFlap
-                      key={`${mode}-${filter}`}
-                      text={stat.value}
-                      tone="dark"
-                      play={mode !== 'idle'}
-                      delay={flapDelay(mode, i)}
-                    />
+                    {stat.value}
                   </span>
                   <span className="mt-1.5 font-mono text-[10px] text-white/85">
                     {stat.label}
                   </span>
+                  <TileFlap delay={statDelay} />
                 </p>
               ) : null}
             </Fragment>
@@ -248,10 +219,11 @@ export function WorkGrid({
         {/* Colophon end-cap: the board's footer panel. */}
         <p
           aria-hidden="true"
-          className="cell cell-enter flex flex-col justify-end gap-0.5 border-r border-b border-line bg-paper px-3.5 py-3"
+          className="cell flap-host relative flex flex-col justify-end gap-0.5 overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3"
         >
           <span className="font-mono text-[10px] text-soft">richardthedesigner.com</span>
           <span className="font-mono text-[10px] text-soft">Edinburgh · making things since 2014</span>
+          <TileFlap delay={flapDelay(order++)} />
         </p>
       </section>
     </div>
@@ -287,9 +259,6 @@ function WorkCellLink({
   work,
   dimmed,
   eager,
-  enterDelay,
-  flapKey,
-  flapPlay,
   flapDelay,
   onPreview,
   onClearPreview,
@@ -297,11 +266,8 @@ function WorkCellLink({
   work: WorkCard
   dimmed: boolean
   eager: boolean
-  enterDelay: number
-  /** Remounts (and so replays) the title flap when the mode or filter changes. */
-  flapKey: string
-  flapPlay: boolean
-  flapDelay: number
+  /** Staggered delay for this panel's reveal flip. */
+  flapDelay: string
   onPreview: () => void
   onClearPreview: () => void
 }) {
@@ -315,26 +281,14 @@ function WorkCellLink({
     onMouseLeave: onClearPreview,
     onFocus: onPreview,
     onBlur: onClearPreview,
-    style: {animationDelay: `${enterDelay}ms`},
   }
 
-  const title = work.title ? (
-    <SplitFlap
-      key={flapKey}
-      text={work.title}
-      tone={media ? 'dark' : 'light'}
-      play={flapPlay}
-      delay={flapDelay}
-    />
-  ) : null
-
-  // Image panel: the work rides behind the flapped title, dimmed so the
-  // characters stay legible.
+  // Image panel: the work behind a legibility scrim.
   if (media) {
     return (
       <Link
         {...shared}
-        className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-smalt-deep p-5 text-white transition-opacity duration-300 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
+        className={`cell flap-host group relative flex flex-col overflow-hidden border-r border-b border-line bg-smalt-deep p-5 text-white transition-opacity duration-300 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
           dimmed ? 'pointer-events-none opacity-30' : ''
         }`}
       >
@@ -354,22 +308,23 @@ function WorkCellLink({
           {kindLabel(work._type)}
         </span>
         <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.2] tracking-[-0.015em] sm:text-[16px]">
-          {title}
+          {work.title}
         </span>
         {work.subtitle ? (
           <span className="relative z-10 mt-1.5 font-mono text-[10px] text-white/85">
             {work.subtitle}
           </span>
         ) : null}
+        <TileFlap delay={flapDelay} />
       </Link>
     )
   }
 
-  // Text panel: cream board tile, ink characters.
+  // Text panel: cream board tile.
   return (
     <Link
       {...shared}
-      className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-colors duration-300 hover:bg-paper-2 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
+      className={`cell flap-host group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-colors duration-300 hover:bg-paper-2 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
         dimmed ? 'pointer-events-none opacity-30' : ''
       }`}
     >
@@ -377,13 +332,14 @@ function WorkCellLink({
         {kindLabel(work._type)}
       </span>
       <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.2] tracking-[-0.012em] sm:text-[16px]">
-        {title}
+        {work.title}
       </span>
       {work.subtitle ? (
         <span className="relative z-10 mt-1 font-mono text-[10px] text-soft">
           {work.subtitle}
         </span>
       ) : null}
+      <TileFlap delay={flapDelay} />
     </Link>
   )
 }
