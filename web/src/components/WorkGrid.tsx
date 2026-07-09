@@ -6,7 +6,6 @@ import Link from 'next/link'
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
 import {STORY_TAGS, kindLabel} from '@/lib/tags'
 import {fallbackFor} from '@/lib/fallbackImages'
-import {FlapText} from '@/components/FlapText'
 import {Media, type MediaLike} from '@/components/Media'
 
 function cardMedia(work: WorkCard): MediaLike | null {
@@ -218,7 +217,6 @@ export function WorkGrid({
                 dimmed={!match}
                 eager={i < 3}
                 enterDelay={Math.min(i, 11) * 45}
-                flapGeneration={filter}
                 onPreview={() => setPreview(w)}
                 onClearPreview={() => setPreview((p) => (p === w ? null : p))}
               />
@@ -287,7 +285,6 @@ function WorkCellLink({
   dimmed,
   eager,
   enterDelay,
-  flapGeneration,
   onPreview,
   onClearPreview,
 }: {
@@ -296,16 +293,12 @@ function WorkCellLink({
   dimmed: boolean
   eager: boolean
   enterDelay: number
-  /** Changes when the filter changes, re-flapping the whole board. */
-  flapGeneration: string
   onPreview: () => void
   onClearPreview: () => void
 }) {
   const media = cardMedia(work)
   const face = variant !== 'text' && media
-  const title = work.title ? (
-    <FlapText key={flapGeneration} text={work.title} delay={enterDelay + 120} />
-  ) : null
+  const title = work.title
 
   const shared = {
     href: `/work/${work.slug}`,
