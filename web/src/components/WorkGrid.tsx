@@ -1,6 +1,6 @@
 'use client'
 
-import {Fragment, useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
@@ -23,28 +23,6 @@ type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number] & {
 
 type Filter = 'all' | (typeof STORY_TAGS)[number]['value']
 
-// Mosaic variants. Curated (gridOrder) items cycle through the large
-// image-faced treatments; everything else stays a compact text cell.
-type CellVariant = 'feature' | 'tall' | 'wide' | 'text'
-
-const FEATURE_PATTERN: CellVariant[] = ['feature', 'tall', 'wide', 'feature', 'wide', 'tall']
-
-// Cap the image-faced cells regardless of how many items gridOrder holds:
-// a mosaic where everything is big is uniform all over again.
-const MAX_FACES = 6
-
-function variantFor(i: number, featuredCount: number): CellVariant {
-  if (i >= featuredCount || i >= MAX_FACES) return 'text'
-  return FEATURE_PATTERN[i % FEATURE_PATTERN.length]
-}
-
-// Editorial interstitials: proof points breaking the grid rhythm.
-// Keyed by the index they appear AFTER. Values must stay CV-true.
-const STAT_CELLS: Record<number, {value: string; label: string}> = {
-  4: {value: '800 → 8,000+', label: 'venues during my tenure'},
-  11: {value: '$1bn+', label: 'processed annually across the platform'},
-}
-
 // Verb forms so the masthead sentence stays grammatical:
 // "How I work / operate / build / design / transform / craft."
 const SENTENCE_WORDS: Record<(typeof STORY_TAGS)[number]['value'], string> = {
@@ -58,11 +36,9 @@ const SENTENCE_WORDS: Record<(typeof STORY_TAGS)[number]['value'], string> = {
 
 export function WorkGrid({
   work,
-  featuredCount,
   intro,
 }: {
   work: WorkCard[]
-  featuredCount: number
   intro: string | null
 }) {
   const [filter, setFilter] = useState<Filter>('all')
@@ -74,34 +50,6 @@ export function WorkGrid({
         .length,
     [work, filter],
   )
-
-  // The span pattern rarely divides evenly into the 3-col (lg) and 2-col (sm)
-  // grids, which would leave blank holes on the final row. Work out the
-  // remainder per breakpoint and square it off with one colophon cell.
-  const {lgGap, smGap} = useMemo(() => {
-    const UNITS_LG: Record<CellVariant, number> = {feature: 4, tall: 2, wide: 2, text: 1}
-    const UNITS_SM: Record<CellVariant, number> = {feature: 2, tall: 1, wide: 2, text: 1}
-    let lg = 0
-    let sm = 0
-    work.forEach((_, i) => {
-      const v = variantFor(i, featuredCount)
-      lg += UNITS_LG[v]
-      sm += UNITS_SM[v]
-    })
-    const stats = Object.keys(STAT_CELLS).filter((k) => Number(k) < work.length).length
-    lg += stats
-    sm += stats
-    return {lgGap: (3 - (lg % 3)) % 3, smGap: (2 - (sm % 2)) % 2}
-  }, [work, featuredCount])
-
-  const fillerClass = [
-    'cell hidden flex-col justify-end gap-0.5 border-r border-b border-line bg-paper px-3.5 py-3',
-    smGap === 1 ? 'sm:flex' : '',
-    lgGap === 0 ? 'lg:hidden' : 'lg:flex',
-    lgGap === 2 ? 'lg:col-span-2' : '',
-  ]
-    .filter(Boolean)
-    .join(' ')
 
   return (
     <div className="grid flex-1 grid-cols-1 md:grid-cols-[minmax(320px,36%)_1fr]">
@@ -205,43 +153,20 @@ export function WorkGrid({
       </aside>
 
       {/* ---- Grid ---- */}
-      <section aria-label="Selected work" className="work-grid grid grid-flow-dense grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
+      <section aria-label="Selected work" className="work-grid grid grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
         {work.map((w, i) => {
           const match = filter === 'all' || (w.tags ?? []).includes(filter)
-          const stat = STAT_CELLS[i]
           return (
-            <Fragment key={w._id}>
-              <WorkCellLink
-                work={w}
-                variant={variantFor(i, featuredCount)}
-                dimmed={!match}
-                eager={i < 3}
-                enterDelay={Math.min(i, 11) * 45}
-                onPreview={() => setPreview(w)}
-                onClearPreview={() => setPreview((p) => (p === w ? null : p))}
-              />
-              {stat ? (
-                <p className="cell cell-enter flex flex-col justify-end border-r border-b border-line bg-smalt px-3.5 py-3 text-white">
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-white/70">
-                    In numbers
-                  </span>
-                  <span className="mt-1 text-[clamp(24px,2vw,32px)] font-bold leading-none tracking-[-0.02em]">
-                    {stat.value}
-                  </span>
-                  <span className="mt-1.5 font-mono text-[10px] text-white/85">
-                    {stat.label}
-                  </span>
-                </p>
-              ) : null}
-            </Fragment>
+            <WorkCellLink
+              key={w._id}
+              work={w}
+              dimmed={!match}
+              enterDelay={Math.min(i, 11) * 45}
+              onPreview={() => setPreview(w)}
+              onClearPreview={() => setPreview((p) => (p === w ? null : p))}
+            />
           )
         })}
-        {lgGap > 0 || smGap > 0 ? (
-          <p aria-hidden="true" className={fillerClass}>
-            <span className="font-mono text-[10px] text-soft">richardthedesigner.com</span>
-            <span className="font-mono text-[10px] text-soft">Edinburgh · making things since 2014</span>
-          </p>
-        ) : null}
       </section>
     </div>
   )
@@ -272,96 +197,29 @@ function FilterWord({
   )
 }
 
-const SPAN_CLASS: Record<CellVariant, string> = {
-  feature: 'min-h-[300px] sm:col-span-2 lg:col-span-2 lg:row-span-2',
-  tall: 'min-h-[300px] lg:row-span-2',
-  wide: 'min-h-[240px] sm:col-span-2',
-  text: '',
-}
-
 function WorkCellLink({
   work,
-  variant,
   dimmed,
-  eager,
   enterDelay,
   onPreview,
   onClearPreview,
 }: {
   work: WorkCard
-  variant: CellVariant
   dimmed: boolean
-  eager: boolean
   enterDelay: number
   onPreview: () => void
   onClearPreview: () => void
 }) {
-  const media = cardMedia(work)
-  const face = variant !== 'text' && media
-  const title = work.title
-
-  const shared = {
-    href: `/work/${work.slug}`,
-    // `inert` removes dimmed cells from tab order + the a11y tree entirely.
-    inert: dimmed || undefined,
-    onMouseEnter: onPreview,
-    onMouseLeave: onClearPreview,
-    onFocus: onPreview,
-    onBlur: onClearPreview,
-    style: {animationDelay: `${enterDelay}ms`},
-  }
-
-  // Image-faced mosaic cell: the work is visible without a hover.
-  if (face) {
-    return (
-      <Link
-        {...shared}
-        className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-smalt-deep p-5 text-white transition-opacity duration-300 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
-          SPAN_CLASS[variant]
-        } ${dimmed ? 'pointer-events-none opacity-30' : ''}`}
-      >
-        <span aria-hidden="true" className="absolute inset-0">
-          <Media
-            media={media}
-            fill
-            priority={eager}
-            width={variant === 'feature' ? 1200 : 800}
-            sizes={variant === 'feature' ? '(max-width: 1024px) 100vw, 44vw' : '(max-width: 1024px) 100vw, 22vw'}
-            className="transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-          <span className="absolute inset-0 bg-smalt/40 mix-blend-multiply" />
-          <span className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/15 to-transparent" />
-        </span>
-        <span className="absolute top-4 right-5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-white/85">
-          {kindLabel(work._type)}
-        </span>
-        <span
-          className={`relative z-10 mt-auto font-semibold leading-[1.1] tracking-[-0.015em] ${
-            variant === 'feature' ? 'text-[clamp(20px,1.9vw,28px)]' : 'text-[17px]'
-          }`}
-        >
-          {title}
-        </span>
-        {variant === 'feature' && work.summary ? (
-          <span
-            aria-hidden="true"
-            className="relative z-10 mt-2 max-w-[46ch] text-[13px] leading-[1.5] text-white/90"
-          >
-            {work.summary}
-          </span>
-        ) : null}
-        {work.subtitle ? (
-          <span className="relative z-10 mt-1.5 font-mono text-[10px] text-white/85">
-            {work.subtitle}
-          </span>
-        ) : null}
-      </Link>
-    )
-  }
-
   return (
     <Link
-      {...shared}
+      href={`/work/${work.slug}`}
+      // `inert` removes dimmed cells from tab order + the a11y tree entirely.
+      inert={dimmed || undefined}
+      onMouseEnter={onPreview}
+      onMouseLeave={onClearPreview}
+      onFocus={onPreview}
+      onBlur={onClearPreview}
+      style={{animationDelay: `${enterDelay}ms`}}
       className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,background-color,color] duration-300 hover:bg-smalt hover:text-white focus-within:bg-smalt focus-within:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
         dimmed ? 'pointer-events-none opacity-30' : ''
       }`}
@@ -371,16 +229,16 @@ function WorkCellLink({
       </span>
       {/* Touch has no hover reveal, so cells carry their imagery directly
           below md; on md+ the preview image lives in the masthead backdrop. */}
-      {media ? (
+      {cardMedia(work) ? (
         <span
           aria-hidden="true"
           className="relative -mx-3.5 mt-4 mb-3 block aspect-[16/9] overflow-hidden md:hidden"
         >
-          <Media media={media} fill width={640} sizes="100vw" />
+          <Media media={cardMedia(work)} fill width={640} sizes="100vw" />
         </span>
       ) : null}
       <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.12] tracking-[-0.012em]">
-        {title}
+        {work.title}
       </span>
       {work.summary ? (
         // Hover/focus enhancement only; hidden from the tree so the link's

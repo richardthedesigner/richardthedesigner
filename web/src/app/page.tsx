@@ -15,12 +15,6 @@ export default async function HomePage() {
   const work = [...(data?.ordered ?? []), ...(data?.extra ?? [])]
 
   return (
-    <WorkGrid
-      work={work}
-      // The first N items are the curated gridOrder; they earn the large
-      // image-faced cells in the mosaic.
-      featuredCount={data?.ordered?.length ?? 0}
-      intro={data?.settings?.intro ?? null}
-    />
+    <WorkGrid work={work} intro={data?.settings?.intro ?? null} />
   )
 }
