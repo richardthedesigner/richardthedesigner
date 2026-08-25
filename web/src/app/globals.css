@@ -165,16 +165,30 @@ body {
   }
 }
 .cell-enter {
-  animation: cell-enter 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  /* `backwards`, not `both`: the fill must not outlive the animation. A
+     forwards fill pins opacity:1 from the keyframes, and animated values beat
+     normal declarations in the cascade, which silently defeats the filter
+     dimming (opacity-30) and the hover spotlight below. `backwards` still
+     holds the `from` state through the staggered per-cell delay. */
+  animation: cell-enter 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 }
 .mast-enter {
   animation: fade-up 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-/* Spotlight: when the grid is hovered/focused, non-active cells recede */
-.work-grid:hover .cell:not(:hover):not(:focus-within),
-.work-grid:focus-within .cell:not(:hover):not(:focus-within) {
+/* Spotlight: when the grid is hovered/focused, non-active cells recede.
+   Cells filtered out by the masthead sentence are excluded: this rule outranks
+   their dim, so without the :not() a hovered grid lifts them back to 0.38 and
+   the filter reads as broken. */
+.work-grid:hover .cell:not(:hover):not(:focus-within):not(.cell-dim),
+.work-grid:focus-within .cell:not(:hover):not(:focus-within):not(.cell-dim) {
   opacity: 0.38;
+}
+
+/* Filtered out. Sits well below the spotlight's 0.38 so the distinction stays
+   legible while the grid is hovered. */
+.cell.cell-dim {
+  opacity: 0.14;
 }
 
 /* Drop cap on the first paragraph of a musings essay */

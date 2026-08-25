@@ -217,7 +217,7 @@ function WorkCellLink({
       onBlur={onClearPreview}
       style={{animationDelay: `${enterDelay}ms`}}
       className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,background-color,color] duration-300 hover:bg-smalt hover:text-white focus-within:bg-smalt focus-within:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
-        dimmed ? 'pointer-events-none opacity-30' : ''
+        dimmed ? 'cell-dim pointer-events-none' : ''
       }`}
     >
       <span className="absolute top-3 right-3.5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft group-hover:text-white/85 group-focus-within:text-white/85">
