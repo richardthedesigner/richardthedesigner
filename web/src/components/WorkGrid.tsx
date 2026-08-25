@@ -66,10 +66,6 @@ export function WorkGrid({
         ) : null}
 
         <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-        <p className="font-mono text-xs tracking-[0.05em] text-white/90">
-          Richard Murphy — Product Design &amp; Platform Strategy
-        </p>
-
         <h1 className="sr-only">Work — Richard Murphy, product designer</h1>
         <p
           role="group"
