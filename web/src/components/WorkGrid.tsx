@@ -39,19 +39,26 @@ export function WorkGrid({
   work: WorkCard[]
   intro: string | null
 }) {
-  // Multi-select. An empty set means "everything" — there is no separate `all`
-  // state to keep in sync, so clearing the last tag and pressing `work` land in
-  // exactly the same place.
+  // Single-select on a plain click; a held modifier combines. An empty set
+  // means "everything", so there is no separate `all` state to keep in sync and
+  // clearing the last tag lands exactly where `work` does.
   const [filters, setFilters] = useState<ReadonlySet<StoryTag>>(new Set())
   const [preview, setPreview] = useState<WorkCard | null>(null)
 
   const filtering = filters.size > 0
 
-  const toggle = useCallback((tag: StoryTag) => {
+  // Plain click selects one word, the way a list selection behaves. Combining
+  // is deliberate: shift/ctrl/cmd adds to the selection instead of replacing
+  // it. (cmd matters on macOS, where ctrl-click is a context menu and never
+  // reaches us as a plain click.)
+  const select = useCallback((tag: StoryTag, additive: boolean) => {
     setFilters((prev) => {
+      if (!additive) {
+        // Pressing the sole active word turns it off, so a selection can
+        // always be undone without reaching for `work`.
+        return prev.size === 1 && prev.has(tag) ? new Set() : new Set([tag])
+      }
       const next = new Set(prev)
-      // Pressing an active word turns it off, so any selection can be undone
-      // without reaching for `work`.
       if (next.has(tag)) next.delete(tag)
       else next.add(tag)
       return next
@@ -91,11 +98,11 @@ export function WorkGrid({
         <h1 className="sr-only">Work — Richard Murphy, product designer</h1>
         <p
           role="group"
-          aria-label="Filter the work by theme. Choose any number of themes."
+          aria-label="Filter the work by theme. Hold shift or command while choosing to combine themes."
           className="mast-enter mt-8 text-[clamp(22px,2.3vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em]"
         >
           <span className="text-white/90">How I </span>
-          <FilterWord active={!filtering} onSelect={clear}>
+          <FilterWord active={!filtering} onSelect={() => clear()}>
             work
           </FilterWord>
           {STORY_TAGS.map((t) => (
@@ -105,7 +112,9 @@ export function WorkGrid({
               </span>
               <FilterWord
                 active={filters.has(t.value)}
-                onSelect={() => toggle(t.value)}
+                onSelect={(e) =>
+                  select(t.value, e.shiftKey || e.ctrlKey || e.metaKey)
+                }
               >
                 {SENTENCE_WORDS[t.value]}
               </FilterWord>
@@ -153,6 +162,11 @@ export function WorkGrid({
           >
             <span className="text-white">{visibleCount}</span> of {work.length}{' '}
             {work.length === 1 ? 'piece' : 'pieces'}
+            {/* A modifier is invisible, so say it once, at the only moment it
+                becomes useful: one word chosen and a second within reach. */}
+            {filters.size === 1 ? (
+              <span className="text-white/70"> · ⇧-click to add</span>
+            ) : null}
             {filtering ? (
               <>
                 {' · '}
@@ -208,7 +222,7 @@ function FilterWord({
   children,
 }: {
   active: boolean
-  onSelect: () => void
+  onSelect: (event: React.MouseEvent<HTMLButtonElement>) => void
   children: React.ReactNode
 }) {
   return (
