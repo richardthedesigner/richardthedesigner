@@ -1,10 +1,10 @@
 'use client'
 
-import {useMemo, useState} from 'react'
+import {useCallback, useMemo, useState} from 'react'
 import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
-import {STORY_TAGS, kindLabel} from '@/lib/tags'
+import {STORY_TAGS, kindLabel, type StoryTag} from '@/lib/tags'
 import {fallbackFor} from '@/lib/fallbackImages'
 import {Media, type MediaLike} from '@/components/Media'
 
@@ -21,11 +21,9 @@ type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number] & {
   summary?: string | null
 }
 
-type Filter = 'all' | (typeof STORY_TAGS)[number]['value']
-
 // Verb forms so the masthead sentence stays grammatical:
 // "How I work / operate / build / design / transform / craft."
-const SENTENCE_WORDS: Record<(typeof STORY_TAGS)[number]['value'], string> = {
+const SENTENCE_WORDS: Record<StoryTag, string> = {
   operate: 'operate',
   build: 'build',
   systems: 'design',
@@ -41,14 +39,38 @@ export function WorkGrid({
   work: WorkCard[]
   intro: string | null
 }) {
-  const [filter, setFilter] = useState<Filter>('all')
+  // Multi-select. An empty set means "everything" — there is no separate `all`
+  // state to keep in sync, so clearing the last tag and pressing `work` land in
+  // exactly the same place.
+  const [filters, setFilters] = useState<ReadonlySet<StoryTag>>(new Set())
   const [preview, setPreview] = useState<WorkCard | null>(null)
 
+  const filtering = filters.size > 0
+
+  const toggle = useCallback((tag: StoryTag) => {
+    setFilters((prev) => {
+      const next = new Set(prev)
+      // Pressing an active word turns it off, so any selection can be undone
+      // without reaching for `work`.
+      if (next.has(tag)) next.delete(tag)
+      else next.add(tag)
+      return next
+    })
+  }, [])
+
+  const clear = useCallback(() => setFilters(new Set()), [])
+
+  // A piece matches if it carries ANY selected tag: adding words widens the
+  // result, matching how the sentence reads.
+  const matches = useCallback(
+    (w: WorkCard) =>
+      !filtering || (w.tags ?? []).some((t) => filters.has(t as StoryTag)),
+    [filters, filtering],
+  )
+
   const visibleCount = useMemo(
-    () =>
-      work.filter((w) => filter === 'all' || (w.tags ?? []).includes(filter))
-        .length,
-    [work, filter],
+    () => work.filter(matches).length,
+    [work, matches],
   )
 
   return (
@@ -69,14 +91,11 @@ export function WorkGrid({
         <h1 className="sr-only">Work — Richard Murphy, product designer</h1>
         <p
           role="group"
-          aria-label="Filter the work by theme"
+          aria-label="Filter the work by theme. Choose any number of themes."
           className="mast-enter mt-8 text-[clamp(22px,2.3vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em]"
         >
           <span className="text-white/90">How I </span>
-          <FilterWord
-            active={filter === 'all'}
-            onSelect={() => setFilter('all')}
-          >
+          <FilterWord active={!filtering} onSelect={clear}>
             work
           </FilterWord>
           {STORY_TAGS.map((t) => (
@@ -85,8 +104,8 @@ export function WorkGrid({
                 {' / '}
               </span>
               <FilterWord
-                active={filter === t.value}
-                onSelect={() => setFilter(t.value)}
+                active={filters.has(t.value)}
+                onSelect={() => toggle(t.value)}
               >
                 {SENTENCE_WORDS[t.value]}
               </FilterWord>
@@ -134,6 +153,18 @@ export function WorkGrid({
           >
             <span className="text-white">{visibleCount}</span> of {work.length}{' '}
             {work.length === 1 ? 'piece' : 'pieces'}
+            {filtering ? (
+              <>
+                {' · '}
+                <button
+                  type="button"
+                  onClick={clear}
+                  className="cursor-pointer underline underline-offset-2 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  Clear
+                </button>
+              </>
+            ) : null}
           </p>
           <nav aria-label="Site" className="font-mono text-[11px]">
             <Link href="/musings" className="py-1 text-white/90 transition-colors hover:text-white">
@@ -151,12 +182,15 @@ export function WorkGrid({
       {/* ---- Grid ---- */}
       <section aria-label="Selected work" className="work-grid grid grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
         {work.map((w, i) => {
-          const match = filter === 'all' || (w.tags ?? []).includes(filter)
+          const match = matches(w)
           return (
             <WorkCellLink
               key={w._id}
               work={w}
               dimmed={!match}
+              // Only a live filter promotes a cell; with nothing selected the
+              // grid stays neutral rather than every cell shouting at once.
+              hit={filtering && match}
               enterDelay={Math.min(i, 11) * 45}
               onPreview={() => setPreview(w)}
               onClearPreview={() => setPreview((p) => (p === w ? null : p))}
@@ -184,7 +218,7 @@ function FilterWord({
       aria-pressed={active}
       className={
         active
-          ? 'inline-block rounded-md bg-white px-2.5 py-1 text-smalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+          ? 'inline-block cursor-pointer rounded-md bg-white px-2.5 py-1 text-smalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
           : 'inline-block cursor-pointer whitespace-nowrap border-b-2 border-white/30 py-1 text-white transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
       }
     >
@@ -196,12 +230,14 @@ function FilterWord({
 function WorkCellLink({
   work,
   dimmed,
+  hit,
   enterDelay,
   onPreview,
   onClearPreview,
 }: {
   work: WorkCard
   dimmed: boolean
+  hit: boolean
   enterDelay: number
   onPreview: () => void
   onClearPreview: () => void
@@ -218,9 +254,9 @@ function WorkCellLink({
       style={{animationDelay: `${enterDelay}ms`}}
       className={`cell cell-enter group relative flex flex-col overflow-hidden border-r border-b border-line bg-paper px-3.5 py-3 transition-[opacity,background-color,color] duration-300 hover:bg-smalt hover:text-white focus-within:bg-smalt focus-within:text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white ${
         dimmed ? 'cell-dim pointer-events-none' : ''
-      }`}
+      } ${hit ? 'cell-hit' : ''}`}
     >
-      <span className="absolute top-3 right-3.5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft group-hover:text-white/85 group-focus-within:text-white/85">
+      <span className="cell-kind absolute top-3 right-3.5 z-10 font-mono text-[9.5px] uppercase tracking-[0.06em] text-soft group-hover:text-white/85 group-focus-within:text-white/85">
         {kindLabel(work._type)}
       </span>
       {/* Touch has no hover reveal, so cells carry their imagery directly
@@ -233,7 +269,7 @@ function WorkCellLink({
           <Media media={cardMedia(work)} fill width={640} sizes="100vw" />
         </span>
       ) : null}
-      <span className="relative z-10 mt-auto text-[15px] font-semibold leading-[1.12] tracking-[-0.012em]">
+      <span className="cell-title relative z-10 mt-auto text-[15px] font-semibold leading-[1.12] tracking-[-0.012em]">
         {work.title}
       </span>
       {work.summary ? (
@@ -245,7 +281,7 @@ function WorkCellLink({
         </span>
       ) : null}
       {work.subtitle ? (
-        <span className="relative z-10 mt-1 font-mono text-[10px] text-soft group-hover:text-white/90 group-focus-within:text-white/90">
+        <span className="cell-sub relative z-10 mt-1 font-mono text-[10px] text-soft group-hover:text-white/90 group-focus-within:text-white/90">
           {work.subtitle}
         </span>
       ) : null}

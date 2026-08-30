@@ -185,10 +185,22 @@ body {
   opacity: 0.38;
 }
 
-/* Filtered out. Sits well below the spotlight's 0.38 so the distinction stays
-   legible while the grid is hovered. */
-.cell.cell-dim {
-  opacity: 0.14;
+/* Filtered out. Fading the cell itself would take its border with it, and
+   since each cell draws only its own right + bottom edge, a surviving cell
+   would be left showing a two-sided L instead of a grid. So the contents fade
+   and the rules stay put. */
+.cell.cell-dim > * {
+  opacity: 0.12;
+  transition: opacity 0.3s;
+}
+
+/* Matched by a live filter: the accent promotes the survivors rather than
+   leaving the grid to read as damage. Dropped on hover/focus, where the cell
+   floods smalt and its text is already white. */
+.cell.cell-hit:not(:hover):not(:focus-within) .cell-kind,
+.cell.cell-hit:not(:hover):not(:focus-within) .cell-title,
+.cell.cell-hit:not(:hover):not(:focus-within) .cell-sub {
+  color: var(--color-smalt);
 }
 
 /* Drop cap on the first paragraph of a musings essay */
