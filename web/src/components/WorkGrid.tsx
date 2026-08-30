@@ -3,6 +3,8 @@
 import {useCallback, useMemo, useState} from 'react'
 import Link from 'next/link'
 
+import {stegaClean, type StegaBranded} from 'next-sanity'
+
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
 import {STORY_TAGS, kindLabel, type StoryTag} from '@/lib/tags'
 import {fallbackFor} from '@/lib/fallbackImages'
@@ -16,8 +18,12 @@ function cardMedia(work: WorkCard): MediaLike | null {
   return fb ? {kind: 'image', alt: fb.alt, externalUrl: fb.url} : null
 }
 
+// StegaBranded because in draft mode every editable string arrives carrying an
+// invisible pointer back to its field. That is what makes click-to-edit work,
+// so the strings are passed through to the DOM intact and only cleaned where
+// they are compared rather than rendered.
 // `summary` is projected by HOME_QUERY but typegen hasn't been re-run yet.
-type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number] & {
+type WorkCard = StegaBranded<NonNullable<HOME_QUERYResult['ordered']>[number]> & {
   summary?: string | null
 }
 
@@ -69,9 +75,12 @@ export function WorkGrid({work}: {work: WorkCard[]}) {
 
   // A piece matches if it carries ANY selected tag: adding words widens the
   // result, matching how the row reads.
+  // stegaClean before comparing: an encoded tag never equals a plain one, so
+  // without this the filter matches nothing at all in draft mode.
   const matches = useCallback(
     (w: WorkCard) =>
-      !filtering || (w.tags ?? []).some((t) => filters.has(t as StoryTag)),
+      !filtering ||
+      stegaClean(w.tags ?? []).some((t) => filters.has(t as StoryTag)),
     [filters, filtering],
   )
 

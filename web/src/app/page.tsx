@@ -1,6 +1,6 @@
 import type {Metadata} from 'next'
 
-import {client} from '@/sanity/client'
+import {sanityFetch} from '@/sanity/live'
 import {HOME_QUERY} from '@/sanity/queries'
 import {WorkGrid} from '@/components/WorkGrid'
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const data = await client.fetch(HOME_QUERY)
+  const {data} = await sanityFetch({query: HOME_QUERY})
   const work = [...(data?.ordered ?? []), ...(data?.extra ?? [])]
 
   return <WorkGrid work={work} />

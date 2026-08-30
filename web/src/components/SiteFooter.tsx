@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import {client} from '@/sanity/client'
+import {sanityFetch} from '@/sanity/live'
 import {LocalTime} from '@/components/LocalTime'
 import {ObfuscatedEmail} from '@/components/ObfuscatedEmail'
 
@@ -21,7 +21,9 @@ const NAV = [
 // masthead and on /info — repeating it here read as noise, so the footer's
 // only jobs are the email CTA, primary nav and a sense of place.
 export async function SiteFooter() {
-  const s = await client.fetch<FooterSettings>(FOOTER_QUERY).catch(() => null)
+  const s = await sanityFetch({query: FOOTER_QUERY})
+    .then((r) => r.data as FooterSettings)
+    .catch(() => null)
 
   return (
     <footer className="bg-smalt px-6 py-12 text-white sm:px-11">

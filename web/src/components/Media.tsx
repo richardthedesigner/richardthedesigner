@@ -1,12 +1,17 @@
 'use client'
 
 import type {SanityImageSource} from '@sanity/image-url'
+import {stegaClean} from 'next-sanity'
 
 import {urlForImage} from '@/sanity/image'
 import {useReducedMotion} from '@/hooks/useReducedMotion'
 
 export type MediaLike = {
-  kind?: 'image' | 'video' | null
+  // Widened to plain string because in draft mode this arrives stega-encoded.
+  // It is a discriminator, never rendered, so it is cleaned before use rather
+  // than kept branded: an uncleaned `kind === 'video'` silently returns false
+  // and every video quietly falls back to its poster.
+  kind?: string | null
   alt?: string | null
   caption?: string | null
   image?: SanityImageSource | null
@@ -47,7 +52,7 @@ export function Media({
 
   // Video: autoplay muted loop — unless the user prefers reduced motion, in
   // which case we show the poster still image instead of any movement.
-  if (media.kind === 'video' && media.videoUrl) {
+  if (stegaClean(media.kind) === 'video' && media.videoUrl) {
     const posterUrl = media.poster
       ? urlForImage(media.poster).width(width).url()
       : undefined

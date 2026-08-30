@@ -1,6 +1,6 @@
 import type {Metadata} from 'next'
 
-import {client} from '@/sanity/client'
+import {sanityFetch} from '@/sanity/live'
 import {INFO_QUERY} from '@/sanity/queries'
 import {ObfuscatedEmail} from '@/components/ObfuscatedEmail'
 import {PageNav} from '@/components/PageNav'
@@ -41,8 +41,10 @@ export const metadata: Metadata = {
 
 export default async function InfoPage() {
   const [settings, extras] = await Promise.all([
-    client.fetch(INFO_QUERY),
-    client.fetch<InfoExtras>(INFO_EXTRAS_QUERY).catch(() => null),
+    sanityFetch({query: INFO_QUERY}).then((r) => r.data),
+    sanityFetch({query: INFO_EXTRAS_QUERY})
+      .then((r) => r.data as InfoExtras)
+      .catch(() => null),
   ])
 
   return (

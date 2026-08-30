@@ -1,4 +1,4 @@
-import {client} from '@/sanity/client'
+import {sanityFetch} from '@/sanity/live'
 import {SITE_URL} from '@/lib/site'
 
 export const revalidate = 3600
@@ -51,8 +51,10 @@ function line(e: Entry, path: string, blurb?: string | null, meta?: string | nul
 // llms.txt — a plain-text map of the site for AI agents and assistants.
 // Generated from the CMS so it never drifts from the published content.
 export async function GET() {
-  const data = await client.fetch<LlmsData>(LLMS_QUERY)
-  const s = data.settings
+  // stega:false — this file is read by machines; no invisible characters.
+  const {data} = await sanityFetch({query: LLMS_QUERY, stega: false})
+  const llms = data as LlmsData
+  const s = llms.settings
 
   const md = `# ${s?.title ?? 'Richard Murphy'} — Product Design & Platform Strategy
 
@@ -65,15 +67,15 @@ Site: ${SITE_URL}
 
 ## Case studies
 
-${data.caseStudies.map((e) => line(e, 'work', e.standfirst, [e.client, e.role, e.timeframe ?? '', e.sector].filter(Boolean).join(' · '))).join('\n')}
+${llms.caseStudies.map((e) => line(e, 'work', e.standfirst, [e.client, e.role, e.timeframe ?? '', e.sector].filter(Boolean).join(' · '))).join('\n')}
 
 ## Projects
 
-${data.projects.map((e) => line(e, 'work', e.description, [e.client, e.year ? String(e.year) : ''].filter(Boolean).join(' · '))).join('\n')}
+${llms.projects.map((e) => line(e, 'work', e.description, [e.client, e.year ? String(e.year) : ''].filter(Boolean).join(' · '))).join('\n')}
 
 ## Musings (essays and perspectives)
 
-${data.musings.map((e) => line(e, 'musings', e.excerpt)).join('\n')}
+${llms.musings.map((e) => line(e, 'musings', e.excerpt)).join('\n')}
 
 ## Other pages
 

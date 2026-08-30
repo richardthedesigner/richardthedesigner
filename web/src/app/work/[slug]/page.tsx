@@ -1,7 +1,7 @@
 import type {Metadata} from 'next'
 import {notFound} from 'next/navigation'
 
-import {client} from '@/sanity/client'
+import {sanityFetch} from '@/sanity/live'
 import {urlForImage} from '@/sanity/image'
 import {WORK_QUERY, WORK_ORDER_QUERY, WORK_SLUGS_QUERY} from '@/sanity/queries'
 import {kindLabel} from '@/lib/tags'
@@ -19,7 +19,8 @@ export const revalidate = 60
 export const dynamicParams = true
 
 export async function generateStaticParams() {
-  const slugs = await client.fetch(WORK_SLUGS_QUERY)
+  // stega:false — these strings become URLs.
+  const {data: slugs} = await sanityFetch({query: WORK_SLUGS_QUERY, stega: false})
   return slugs.filter((s) => s.slug).map((s) => ({slug: s.slug as string}))
 }
 
@@ -27,7 +28,12 @@ type Params = {params: Promise<{slug: string}>}
 
 export async function generateMetadata({params}: Params): Promise<Metadata> {
   const {slug} = await params
-  const work = await client.fetch(WORK_QUERY, {slug})
+  // stega:false — this builds <title>, canonical and og:image.
+  const {data: work} = await sanityFetch({
+    query: WORK_QUERY,
+    params: {slug},
+    stega: false,
+  })
   if (!work) return {}
 
   const description =
@@ -58,8 +64,8 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
 export default async function WorkPage({params}: Params) {
   const {slug} = await params
   const [work, order] = await Promise.all([
-    client.fetch(WORK_QUERY, {slug}),
-    client.fetch(WORK_ORDER_QUERY),
+    sanityFetch({query: WORK_QUERY, params: {slug}}).then((r) => r.data),
+    sanityFetch({query: WORK_ORDER_QUERY}).then((r) => r.data),
   ])
 
   if (!work) notFound()

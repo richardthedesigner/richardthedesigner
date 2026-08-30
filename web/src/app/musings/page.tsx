@@ -1,7 +1,7 @@
 import type {Metadata} from 'next'
 import Link from 'next/link'
 
-import {client} from '@/sanity/client'
+import {sanityFetch} from '@/sanity/live'
 import {MUSINGS_INDEX_QUERY} from '@/sanity/queries'
 import {tagTitle} from '@/lib/tags'
 import {formatDate} from '@/lib/date'
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 }
 
 export default async function MusingsPage() {
-  const musings = await client.fetch(MUSINGS_INDEX_QUERY)
+  const {data: musings} = await sanityFetch({query: MUSINGS_INDEX_QUERY})
 
   return (
     <>

@@ -9,6 +9,12 @@ export const dataset = assert(
 export const apiVersion =
   process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-06-11'
 
+// Where click-to-edit sends you. Must match the Studio actually being used, or
+// the overlay links resolve to nothing.
+export const studioUrl =
+  process.env.NEXT_PUBLIC_SANITY_STUDIO_URL ||
+  'https://richardthedesigner.sanity.studio'
+
 function assert(value: string | undefined, name: string): string {
   if (!value) throw new Error(`Missing environment variable: ${name}`)
   return value

@@ -2,7 +2,7 @@ import type {Metadata} from 'next'
 import Link from 'next/link'
 import {notFound} from 'next/navigation'
 
-import {client} from '@/sanity/client'
+import {sanityFetch} from '@/sanity/live'
 import {MUSING_QUERY, MUSING_SLUGS_QUERY} from '@/sanity/queries'
 import {formatDate} from '@/lib/date'
 import {SITE_URL, jsonLd} from '@/lib/site'
@@ -12,7 +12,8 @@ export const revalidate = 60
 export const dynamicParams = true
 
 export async function generateStaticParams() {
-  const slugs = await client.fetch(MUSING_SLUGS_QUERY)
+  // stega:false — these strings become URLs.
+  const {data: slugs} = await sanityFetch({query: MUSING_SLUGS_QUERY, stega: false})
   return slugs.filter((s) => s.slug).map((s) => ({slug: s.slug as string}))
 }
 
@@ -20,7 +21,12 @@ type Params = {params: Promise<{slug: string}>}
 
 export async function generateMetadata({params}: Params): Promise<Metadata> {
   const {slug} = await params
-  const musing = await client.fetch(MUSING_QUERY, {slug})
+  // stega:false — this builds <title>, description and canonical.
+  const {data: musing} = await sanityFetch({
+    query: MUSING_QUERY,
+    params: {slug},
+    stega: false,
+  })
   if (!musing) return {}
   return {
     title: musing.title,
@@ -36,7 +42,7 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
 
 export default async function MusingPage({params}: Params) {
   const {slug} = await params
-  const musing = await client.fetch(MUSING_QUERY, {slug})
+  const {data: musing} = await sanityFetch({query: MUSING_QUERY, params: {slug}})
   if (!musing) notFound()
 
   return (

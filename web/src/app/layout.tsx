@@ -1,7 +1,11 @@
 import type {Metadata} from 'next'
 import {Fraunces, IBM_Plex_Sans, IBM_Plex_Mono} from 'next/font/google'
 
-import {client} from '@/sanity/client'
+import {draftMode} from 'next/headers'
+import {VisualEditing} from 'next-sanity/visual-editing'
+
+import {sanityFetch, SanityLive} from '@/sanity/live'
+import {DisableDraftMode} from '@/components/DisableDraftMode'
 import {LAYOUT_QUERY} from '@/sanity/queries'
 import {SITE_URL, jsonLd} from '@/lib/site'
 import {SiteFooter} from '@/components/SiteFooter'
@@ -58,7 +62,11 @@ export default async function RootLayout({
 }>) {
   // The shell must never 500 because the CMS blinked; everything it needs has
   // a static fallback.
-  const settings = await client.fetch(LAYOUT_QUERY).catch(() => null)
+  const {isEnabled: isDraft} = await draftMode()
+
+  const settings = await sanityFetch({query: LAYOUT_QUERY})
+    .then((r) => r.data)
+    .catch(() => null)
   const tickerItems =
     settings?.tickerItems && settings.tickerItems.length
       ? settings.tickerItems
@@ -109,6 +117,15 @@ export default async function RootLayout({
         </main>
         <SiteFooter />
         <Ticker items={tickerItems} />
+        {/* Always mounted: it is what makes sanityFetch revalidate on content
+            changes. In published mode it is inert. */}
+        <SanityLive />
+        {isDraft ? (
+          <>
+            <VisualEditing />
+            <DisableDraftMode />
+          </>
+        ) : null}
       </body>
     </html>
   )
