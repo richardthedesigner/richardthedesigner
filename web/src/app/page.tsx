@@ -14,7 +14,5 @@ export default async function HomePage() {
   const data = await client.fetch(HOME_QUERY)
   const work = [...(data?.ordered ?? []), ...(data?.extra ?? [])]
 
-  return (
-    <WorkGrid work={work} intro={data?.settings?.intro ?? null} />
-  )
+  return <WorkGrid work={work} />
 }

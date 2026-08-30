@@ -173,7 +173,9 @@ body {
   animation: cell-enter 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 }
 .mast-enter {
-  animation: fade-up 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  /* `backwards` for the same reason as .cell-enter: a forwards fill would pin
+     the keyframe's opacity and outrank anything that later sets it. */
+  animation: fade-up 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 }
 
 /* Spotlight: when the grid is hovered/focused, non-active cells recede.
@@ -201,6 +203,68 @@ body {
 .cell.cell-hit:not(:hover):not(:focus-within) .cell-title,
 .cell.cell-hit:not(:hover):not(:focus-within) .cell-sub {
   color: var(--color-smalt);
+}
+
+/* ===========================================================================
+   Masthead sentence — the filter is the sentence. Ported from home-fix_5.
+   The verbs are buttons sitting inline in the headline, so the control reads
+   as prose and the selection completes a clause rather than labelling a list.
+   =========================================================================== */
+.mast-sentence {
+  font-weight: 700;
+  font-size: clamp(30px, 3.1vw, 48px);
+  line-height: 1.14;
+  letter-spacing: -0.022em;
+  transition: color 0.2s;
+}
+
+/* With a verb chosen the rest of the sentence recedes, so the choice reads as
+   the subject and its context stays legible behind it.
+   62%, not the reference's 46%: measured on this blue, 46% gives 2.30:1 and
+   this is large bold body copy, which WCAG holds to 3:1. 62% measures 3.08:1
+   and still reads as clearly stepped back. */
+.mast-sentence.is-filtered {
+  color: color-mix(in srgb, var(--color-white) 62%, transparent);
+}
+
+.mast-sentence button {
+  font: inherit;
+  color: var(--color-white);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  /* The rule is the only thing marking these words as controls, so it is held
+     to the 3:1 non-text minimum (3.08:1) rather than the reference's 38%,
+     which measures 1.98:1. */
+  border-bottom: 3px solid color-mix(in srgb, var(--color-white) 62%, transparent);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.mast-sentence button:hover {
+  border-bottom-color: var(--color-white);
+}
+.mast-sentence.is-filtered button {
+  color: color-mix(in srgb, var(--color-white) 90%, transparent);
+}
+
+.mast-sentence button.is-on {
+  background: var(--color-white);
+  color: var(--color-smalt);
+  border-radius: 7px;
+  border-bottom-color: transparent;
+  padding: 0 0.16em 2px;
+  margin: 0 -0.08em;
+}
+.mast-sentence.is-filtered button.is-on {
+  color: var(--color-smalt);
+}
+
+/* The reset sits in the sentence too, quieter than the verbs. */
+.mast-sentence button.is-reset {
+  border-bottom: 2px dotted color-mix(in srgb, var(--color-white) 62%, transparent);
+}
+.mast-sentence button.is-reset:hover {
+  border-bottom-color: var(--color-white);
 }
 
 /* Drop cap on the first paragraph of a musings essay */

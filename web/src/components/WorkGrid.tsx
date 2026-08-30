@@ -5,7 +5,6 @@ import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
 import {STORY_TAGS, kindLabel, type StoryTag} from '@/lib/tags'
-import {opening} from '@/lib/intro'
 import {fallbackFor} from '@/lib/fallbackImages'
 import {Media, type MediaLike} from '@/components/Media'
 
@@ -22,16 +21,24 @@ type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number] & {
   summary?: string | null
 }
 
-const FALLBACK_INTRO =
-  "I'm Richard Murphy, a product designer and design leader."
+// The headline is both the identity and the control, so it cannot come from a
+// plain CMS string: each verb is a button and the prose between them is
+// structure. Typed against StoryTag, so adding or renaming a tag fails the
+// build here rather than silently dropping a clause.
+const CLAUSE: Record<StoryTag, string> = {
+  operate: ' platforms, ',
+  design: ' systems, ',
+  build: ' on my own time, ',
+  transform: ' how companies work, and ',
+  run: ' the odd business.',
+}
 
-export function WorkGrid({
-  work,
-  intro,
-}: {
-  work: WorkCard[]
-  intro: string | null
-}) {
+const PROOF = [
+  "Six years across QikServe and Access Group's hospitality platforms, where self-service ordering grew to 8,000+ locations in 42 countries.",
+  'Before that, and since: cinemas, retail interiors, furniture, shops of my own.',
+]
+
+export function WorkGrid({work}: {work: WorkCard[]}) {
   // Single-select on a plain click; a held modifier combines. An empty set
   // means "everything", so there is no separate `all` state to keep in sync and
   // clearing the last tag lands exactly where `work` does.
@@ -70,34 +77,56 @@ export function WorkGrid({
 
   const visibleCount = useMemo(() => work.filter(matches).length, [work, matches])
 
-  const {lead, rest, truncated} = opening(intro, 2)
-
   return (
-    <div className="grid flex-1 grid-cols-1 md:grid-cols-[minmax(320px,36%)_1fr]">
-      {/* ---- Masthead (smalt) ---- */}
-      <aside className="relative flex flex-col overflow-hidden bg-smalt p-7 text-white md:sticky md:top-0 md:h-screen">
-        {/* Blue-washed backdrop: the hovered work's image floods the masthead */}
+    <div className="grid flex-1 grid-cols-1 md:grid-cols-[min(42vw,760px)_1fr]">
+      {/* ---- Panel (smalt) ---- */}
+      <aside className="relative flex flex-col justify-end overflow-hidden bg-smalt p-8 text-white sm:p-10 md:sticky md:top-0 md:h-screen">
+        {/* Blue-washed backdrop: the hovered work's image floods the panel */}
         {preview && cardMedia(preview) ? (
           <div
             aria-hidden="true"
             className="absolute inset-0 z-0 animate-[fade-in_0.35s_ease] opacity-50 mix-blend-multiply"
           >
-            <Media media={cardMedia(preview)} fill width={900} sizes="36vw" />
+            <Media media={cardMedia(preview)} fill width={900} sizes="42vw" />
           </div>
         ) : null}
 
-        <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-          {/* Who, first. A visitor arriving cold reads a person before they
-              read a control. */}
-          <h1 className="mast-enter mt-2 max-w-[18ch] text-[clamp(24px,2.6vw,38px)] font-semibold leading-[1.12] tracking-[-0.022em]">
-            {lead || FALLBACK_INTRO}
+        <div className="relative z-10">
+          <p className="sr-only">
+            The verbs below filter the work. Hold shift or command while
+            choosing to combine them.
+          </p>
+
+          <h1 className={`mast-enter mast-sentence ${filtering ? 'is-filtered' : ''}`}>
+            I&rsquo;m Richard Murphy, a designer of{' '}
+            <SentenceWord active={!filtering} reset onSelect={() => clear()}>
+              various things
+            </SentenceWord>
+            . I{' '}
+            {STORY_TAGS.map((t) => (
+              <span key={t.value}>
+                <SentenceWord
+                  active={filters.has(t.value)}
+                  onSelect={(e) =>
+                    select(t.value, e.shiftKey || e.ctrlKey || e.metaKey)
+                  }
+                >
+                  {t.value}
+                </SentenceWord>
+                {CLAUSE[t.value]}
+              </span>
+            ))}
           </h1>
 
-          {/* Proof, then the hovered piece takes this slot. On md+ the aside is
-              h-screen and this block sinks to the bottom via justify-end; in
-              normal flow so it can never overlap the headline. */}
+          {/* The count is not drawn, but it still has to be announced. */}
+          <p className="sr-only" role="status" aria-live="polite">
+            {visibleCount} of {work.length}{' '}
+            {work.length === 1 ? 'piece' : 'pieces'} shown
+          </p>
+
+          {/* Proof, until a card is hovered and takes the slot. */}
           <div
-            className="mast-enter mt-6 md:flex md:min-h-0 md:flex-1 md:flex-col md:justify-end"
+            className="mast-enter mt-8 max-w-[50ch] text-[16.5px] leading-[1.54] text-white/90"
             style={{animationDelay: '0.14s'}}
           >
             {preview ? (
@@ -116,117 +145,67 @@ export function WorkGrid({
                 ) : null}
               </div>
             ) : (
-              <div>
-                <p className="max-w-[38ch] text-[15px] leading-[1.55] text-white/90">
-                  {rest}
+              PROOF.map((line) => (
+                <p key={line} className="[&+p]:mt-[11px]">
+                  {line}
                 </p>
-                {truncated ? (
-                  <p className="mt-4">
-                    <Link
-                      href="/info"
-                      className="font-mono text-[11px] text-white underline underline-offset-4 decoration-white/40 transition-colors hover:decoration-white"
-                    >
-                      The full story
-                    </Link>
-                  </p>
-                ) : null}
-              </div>
+              ))
             )}
           </div>
 
-          <nav aria-label="Site" className="mt-6 font-mono text-[11px]">
-            <Link href="/musings" className="py-1 text-white/90 transition-colors hover:text-white">
-              Musings
-            </Link>
-            <span aria-hidden="true" className="px-1.5 text-white/50">/</span>
-            <Link href="/info" className="py-1 text-white/90 transition-colors hover:text-white">
-              Info
-            </Link>
+          <nav
+            aria-label="Site"
+            className="mt-9 flex flex-wrap gap-x-8 gap-y-3 text-[15px] font-medium"
+          >
+            {/* The reference carries three links, but two of them pointed at
+                the same page: there is one About surface, and /info is it. */}
+            {[
+              {href: '/info', label: 'The full story'},
+              {href: '/musings', label: 'Musings'},
+            ].map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                className="border-b border-white/60 pb-[3px] text-white transition-colors hover:border-white"
+              >
+                {l.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </aside>
 
-      {/* ---- Work column: control, then grid ---- */}
-      <div className="flex min-w-0 flex-col">
-        {/* The filter sits with the results it governs, and reads as a label
-            now that the reader already knows who "I" is. */}
-        <div className="sticky top-0 z-20 flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-line bg-paper/95 px-3.5 py-3 backdrop-blur-sm">
-          <p
-            role="group"
-            aria-label="Filter the work by theme. Hold shift or command while choosing to combine themes."
-            className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[13px]"
-          >
-            {/* The frame stays put and the marked word completes it, so the
-                sentence resolves ("How I operate") without `work` appearing
-                twice: once as the frame and again as its own option. */}
-            <span className="font-mono text-[11px] text-soft">How I</span>
-            {/* `work` is the default and the way back to everything, so the
-                row carries its own reset and the count stays a count. */}
-            <FilterWord active={!filtering} onSelect={() => clear()}>
-              work
-            </FilterWord>
-            {STORY_TAGS.map((t) => (
-              <span key={t.value} className="flex items-baseline">
-                <span aria-hidden="true" className="text-line">
-                  ·
-                </span>
-                <FilterWord
-                  active={filters.has(t.value)}
-                  onSelect={(e) =>
-                    select(t.value, e.shiftKey || e.ctrlKey || e.metaKey)
-                  }
-                >
-                  {t.value}
-                </FilterWord>
-              </span>
-            ))}
-          </p>
-
-          <p
-            className="ml-auto font-mono text-[11px] text-soft"
-            role="status"
-            aria-live="polite"
-          >
-            <span className="text-ink">{visibleCount}</span> of {work.length}{' '}
-            {work.length === 1 ? 'piece' : 'pieces'}
-            {/* A modifier is invisible, so say it once, at the only moment it
-                becomes useful: one word chosen and a second within reach. */}
-            {filters.size === 1 ? (
-              <span className="text-soft"> · ⇧-click to add</span>
-            ) : null}
-
-          </p>
-        </div>
-
-        <section aria-label="Selected work" className="work-grid grid flex-1 grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
-          {work.map((w, i) => {
-            const match = matches(w)
-            return (
-              <WorkCellLink
-                key={w._id}
-                work={w}
-                dimmed={!match}
-                // Only a live filter promotes a cell; with nothing selected the
-                // grid stays neutral rather than every cell shouting at once.
-                hit={filtering && match}
-                enterDelay={Math.min(i, 11) * 45}
-                onPreview={() => setPreview(w)}
-                onClearPreview={() => setPreview((p) => (p === w ? null : p))}
-              />
-            )
-          })}
-        </section>
-      </div>
+      {/* ---- Work ---- */}
+      <section aria-label="Selected work" className="work-grid grid grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
+        {work.map((w, i) => {
+          const match = matches(w)
+          return (
+            <WorkCellLink
+              key={w._id}
+              work={w}
+              dimmed={!match}
+              // Only a live filter promotes a cell; with nothing selected the
+              // grid stays neutral rather than every cell shouting at once.
+              hit={filtering && match}
+              enterDelay={Math.min(i, 11) * 45}
+              onPreview={() => setPreview(w)}
+              onClearPreview={() => setPreview((p) => (p === w ? null : p))}
+            />
+          )
+        })}
+      </section>
     </div>
   )
 }
 
-function FilterWord({
+function SentenceWord({
   active,
+  reset = false,
   onSelect,
   children,
 }: {
   active: boolean
+  reset?: boolean
   onSelect: (event: React.MouseEvent<HTMLButtonElement>) => void
   children: React.ReactNode
 }) {
@@ -235,11 +214,10 @@ function FilterWord({
       type="button"
       onClick={onSelect}
       aria-pressed={active}
-      className={
-        active
-          ? 'cursor-pointer rounded-md bg-smalt px-2 py-0.5 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-smalt'
-          : 'cursor-pointer rounded-md px-2 py-0.5 text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-smalt hover:text-smalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-smalt'
-      }
+      // The pill marks a chosen verb only. The reset keeps its dotted rule in
+      // every state, as in the reference: with nothing filtered the sentence
+      // simply reads whole, rather than announcing a default.
+      className={`${active && !reset ? 'is-on' : ''} ${reset ? 'is-reset' : ''}`}
     >
       {children}
     </button>
