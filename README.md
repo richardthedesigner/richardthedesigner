@@ -44,6 +44,7 @@ NEXT_PUBLIC_SANITY_API_VERSION=2026-06-11
 NEXT_PUBLIC_SITE_URL=https://<production-domain>   # canonical URLs, OG, sitemap
 NEXT_PUBLIC_SANITY_STUDIO_URL=https://richardthedesigner.sanity.studio
 SANITY_API_READ_TOKEN=<viewer token>               # drafts + live preview only
+SANITY_REVALIDATE_SECRET=<shared secret>           # publish webhook
 ```
 
 The public site reads only **published** content via the CDN. Drafts are
@@ -77,6 +78,21 @@ to jump to its field, and watch edits apply without a reload.
 - Machine-readable output passes `stega: false`: every `generateMetadata`,
   `generateStaticParams`, `sitemap.ts` and the `llms.txt` route. Invisible
   characters in a `<title>`, canonical or sitemap URL would be a live SEO bug.
+
+## Publishing
+
+Routes are on 60-second ISR, so a publish would otherwise take up to a minute to
+appear. `POST /api/revalidate` is called by a Sanity webhook on publish and
+rebuilds the affected paths in about a second; the 60s window stays as a
+backstop. The webhook must send the document's `_type` and `slug` and be signed
+with `SANITY_REVALIDATE_SECRET`.
+
+It revalidates *paths*, not tags. `sanityFetch` does call `cacheTag` internally,
+but only within a `use cache` boundary, and this app caches per route via
+`export const revalidate` — so `revalidateTag` would register nothing and
+silently do nothing.
+
+`<SanityLive />` covers draft mode only. The published site needs this webhook.
 
 ## Design
 

@@ -84,10 +84,14 @@ sign-off before it runs.
 deploy, and only then drop the field and the `extra` branches from
 `HOME_QUERY` / `WORK_ORDER_QUERY`. Content migration: needs sign-off.
 
-## Phase 6 — Instant publish
+## Phase 6 — Instant publish   ← CODE DONE, WEBHOOK NEEDS RICHARD
 
-`api/revalidate/route.ts` verifying the signature with `@sanity/webhook` and
-calling `revalidateTag` per document type; tag the fetches to match. Then a
+`api/revalidate/route.ts` verifying the signature with `@sanity/webhook`. It
+calls `revalidatePath`, **not** `revalidateTag`: sanityFetch calls `cacheTag`
+only inside a `use cache` boundary, and this app caches per route via
+`export const revalidate`, so tags would register nothing and revalidateTag
+would silently no-op. Still needs the webhook created in Sanity with a matching
+`SANITY_REVALIDATE_SECRET` in Vercel. Then a
 publish webhook in Sanity pointing at it. `<SanityLive />` covers draft mode
 only; the published site still needs this.
 
