@@ -83,6 +83,33 @@ export type MediaItem = {
   caption?: string;
 };
 
+export type AdvisoryRole = {
+  _id: string;
+  _type: "advisoryRole";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  organisation: string;
+  timeframe?: string;
+  description?: string;
+  url?: string;
+  order?: number;
+};
+
+export type ClientVignette = {
+  _id: string;
+  _type: "clientVignette";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  sector?: string;
+  work?: string;
+  oneLiner?: string;
+  order?: number;
+};
+
 export type SiteSettings = {
   _id: string;
   _type: "siteSettings";
@@ -297,7 +324,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = ContentBody | Metric | MediaItem | SiteSettings | Musing | Slug | Project | CaseStudy | SanityImageCrop | SanityImageHotspot | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = ContentBody | Metric | MediaItem | AdvisoryRole | ClientVignette | SiteSettings | Musing | Slug | Project | CaseStudy | SanityImageCrop | SanityImageHotspot | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/sanity/queries.ts
 // Variable: HOME_QUERY

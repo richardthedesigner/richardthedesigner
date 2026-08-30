@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import type {HOME_QUERYResult} from '@/sanity/sanity.types'
 import {STORY_TAGS, kindLabel, type StoryTag} from '@/lib/tags'
+import {opening} from '@/lib/intro'
 import {fallbackFor} from '@/lib/fallbackImages'
 import {Media, type MediaLike} from '@/components/Media'
 
@@ -21,16 +22,8 @@ type WorkCard = NonNullable<HOME_QUERYResult['ordered']>[number] & {
   summary?: string | null
 }
 
-// Verb forms so the masthead sentence stays grammatical:
-// "How I work / operate / build / design / transform / craft."
-const SENTENCE_WORDS: Record<StoryTag, string> = {
-  operate: 'operate',
-  build: 'build',
-  systems: 'design',
-  transform: 'transform',
-  craft: 'craft',
-  play: 'play',
-}
+const FALLBACK_INTRO =
+  "I'm Richard Murphy, a product designer and design leader."
 
 export function WorkGrid({
   work,
@@ -68,17 +61,16 @@ export function WorkGrid({
   const clear = useCallback(() => setFilters(new Set()), [])
 
   // A piece matches if it carries ANY selected tag: adding words widens the
-  // result, matching how the sentence reads.
+  // result, matching how the row reads.
   const matches = useCallback(
     (w: WorkCard) =>
       !filtering || (w.tags ?? []).some((t) => filters.has(t as StoryTag)),
     [filters, filtering],
   )
 
-  const visibleCount = useMemo(
-    () => work.filter(matches).length,
-    [work, matches],
-  )
+  const visibleCount = useMemo(() => work.filter(matches).length, [work, matches])
+
+  const {lead, rest, truncated} = opening(intro, 2)
 
   return (
     <div className="grid flex-1 grid-cols-1 md:grid-cols-[minmax(320px,36%)_1fr]">
@@ -95,92 +87,54 @@ export function WorkGrid({
         ) : null}
 
         <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-        <h1 className="sr-only">Work — Richard Murphy, product designer</h1>
-        <p
-          role="group"
-          aria-label="Filter the work by theme. Hold shift or command while choosing to combine themes."
-          className="mast-enter mt-8 text-[clamp(22px,2.3vw,34px)] font-semibold leading-[1.18] tracking-[-0.02em]"
-        >
-          <span className="text-white/90">How I </span>
-          <FilterWord active={!filtering} onSelect={() => clear()}>
-            work
-          </FilterWord>
-          {STORY_TAGS.map((t) => (
-            <span key={t.value}>
-              <span aria-hidden="true" className="px-0.5 text-white/70">
-                {' / '}
-              </span>
-              <FilterWord
-                active={filters.has(t.value)}
-                onSelect={(e) =>
-                  select(t.value, e.shiftKey || e.ctrlKey || e.metaKey)
-                }
-              >
-                {SENTENCE_WORDS[t.value]}
-              </FilterWord>
-            </span>
-          ))}
-          <span className="text-white/90">.</span>
-        </p>
+          {/* Who, first. A visitor arriving cold reads a person before they
+              read a control. */}
+          <h1 className="mast-enter mt-2 max-w-[18ch] text-[clamp(24px,2.6vw,38px)] font-semibold leading-[1.12] tracking-[-0.022em]">
+            {lead || FALLBACK_INTRO}
+          </h1>
 
-        {/* Preview / intro blurb (text only; the image lives in the backdrop).
-            On md+ the aside is h-screen and this block sinks to the bottom via
-            justify-end; in normal flow (not absolute) so it can never overlap
-            the headline, whatever the viewport height. */}
-        <div
-          className="mast-enter mt-6 md:flex md:min-h-0 md:flex-1 md:flex-col md:justify-end"
-          style={{animationDelay: '0.14s'}}
-        >
-          {preview ? (
-            <div className="animate-[fade-up_0.3s_ease]">
-              <p className="font-mono text-[11px] text-white/85">
-                {kindLabel(preview._type)}
-                {preview.subtitle ? ` · ${preview.subtitle}` : ''}
-              </p>
-              <div className="mt-1.5 text-[clamp(20px,1.8vw,28px)] font-semibold leading-[1.1] tracking-[-0.02em]">
-                {preview.title}
-              </div>
-              {preview.summary ? (
-                <p className="mt-2.5 max-w-[36ch] text-sm leading-[1.5] text-white/90">
-                  {preview.summary}
-                </p>
-              ) : null}
-            </div>
-          ) : (
-            <p className="max-w-[34ch] text-sm text-white/90">
-              {intro ||
-                'Platforms operated at global scale. Systems built to be AI-native. Years of making the thing, by hand.'}
-            </p>
-          )}
-        </div>
-
-        <div className="mt-4 flex items-baseline justify-between gap-4">
-          <p
-            className="font-mono text-[11px] text-white/90"
-            role="status"
-            aria-live="polite"
+          {/* Proof, then the hovered piece takes this slot. On md+ the aside is
+              h-screen and this block sinks to the bottom via justify-end; in
+              normal flow so it can never overlap the headline. */}
+          <div
+            className="mast-enter mt-6 md:flex md:min-h-0 md:flex-1 md:flex-col md:justify-end"
+            style={{animationDelay: '0.14s'}}
           >
-            <span className="text-white">{visibleCount}</span> of {work.length}{' '}
-            {work.length === 1 ? 'piece' : 'pieces'}
-            {/* A modifier is invisible, so say it once, at the only moment it
-                becomes useful: one word chosen and a second within reach. */}
-            {filters.size === 1 ? (
-              <span className="text-white/70"> · ⇧-click to add</span>
-            ) : null}
-            {filtering ? (
-              <>
-                {' · '}
-                <button
-                  type="button"
-                  onClick={clear}
-                  className="cursor-pointer underline underline-offset-2 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                  Clear
-                </button>
-              </>
-            ) : null}
-          </p>
-          <nav aria-label="Site" className="font-mono text-[11px]">
+            {preview ? (
+              <div className="animate-[fade-up_0.3s_ease]">
+                <p className="font-mono text-[11px] text-white/85">
+                  {kindLabel(preview._type)}
+                  {preview.subtitle ? ` · ${preview.subtitle}` : ''}
+                </p>
+                <div className="mt-1.5 text-[clamp(20px,1.8vw,28px)] font-semibold leading-[1.1] tracking-[-0.02em]">
+                  {preview.title}
+                </div>
+                {preview.summary ? (
+                  <p className="mt-2.5 max-w-[36ch] text-sm leading-[1.5] text-white/90">
+                    {preview.summary}
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <div>
+                <p className="max-w-[38ch] text-[15px] leading-[1.55] text-white/90">
+                  {rest}
+                </p>
+                {truncated ? (
+                  <p className="mt-4">
+                    <Link
+                      href="/info"
+                      className="font-mono text-[11px] text-white underline underline-offset-4 decoration-white/40 transition-colors hover:decoration-white"
+                    >
+                      The full story
+                    </Link>
+                  </p>
+                ) : null}
+              </div>
+            )}
+          </div>
+
+          <nav aria-label="Site" className="mt-6 font-mono text-[11px]">
             <Link href="/musings" className="py-1 text-white/90 transition-colors hover:text-white">
               Musings
             </Link>
@@ -190,28 +144,79 @@ export function WorkGrid({
             </Link>
           </nav>
         </div>
-        </div>
       </aside>
 
-      {/* ---- Grid ---- */}
-      <section aria-label="Selected work" className="work-grid grid grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
-        {work.map((w, i) => {
-          const match = matches(w)
-          return (
-            <WorkCellLink
-              key={w._id}
-              work={w}
-              dimmed={!match}
-              // Only a live filter promotes a cell; with nothing selected the
-              // grid stays neutral rather than every cell shouting at once.
-              hit={filtering && match}
-              enterDelay={Math.min(i, 11) * 45}
-              onPreview={() => setPreview(w)}
-              onClearPreview={() => setPreview((p) => (p === w ? null : p))}
-            />
-          )
-        })}
-      </section>
+      {/* ---- Work column: control, then grid ---- */}
+      <div className="flex min-w-0 flex-col">
+        {/* The filter sits with the results it governs, and reads as a label
+            now that the reader already knows who "I" is. */}
+        <div className="sticky top-0 z-20 flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-line bg-paper/95 px-3.5 py-3 backdrop-blur-sm">
+          <p
+            role="group"
+            aria-label="Filter the work by theme. Hold shift or command while choosing to combine themes."
+            className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[13px]"
+          >
+            {/* The frame stays put and the marked word completes it, so the
+                sentence resolves ("How I operate") without `work` appearing
+                twice: once as the frame and again as its own option. */}
+            <span className="font-mono text-[11px] text-soft">How I</span>
+            {/* `work` is the default and the way back to everything, so the
+                row carries its own reset and the count stays a count. */}
+            <FilterWord active={!filtering} onSelect={() => clear()}>
+              work
+            </FilterWord>
+            {STORY_TAGS.map((t) => (
+              <span key={t.value} className="flex items-baseline">
+                <span aria-hidden="true" className="text-line">
+                  ·
+                </span>
+                <FilterWord
+                  active={filters.has(t.value)}
+                  onSelect={(e) =>
+                    select(t.value, e.shiftKey || e.ctrlKey || e.metaKey)
+                  }
+                >
+                  {t.value}
+                </FilterWord>
+              </span>
+            ))}
+          </p>
+
+          <p
+            className="ml-auto font-mono text-[11px] text-soft"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="text-ink">{visibleCount}</span> of {work.length}{' '}
+            {work.length === 1 ? 'piece' : 'pieces'}
+            {/* A modifier is invisible, so say it once, at the only moment it
+                becomes useful: one word chosen and a second within reach. */}
+            {filters.size === 1 ? (
+              <span className="text-soft"> · ⇧-click to add</span>
+            ) : null}
+
+          </p>
+        </div>
+
+        <section aria-label="Selected work" className="work-grid grid flex-1 grid-cols-1 auto-rows-[minmax(180px,1fr)] sm:grid-cols-2 lg:grid-cols-3">
+          {work.map((w, i) => {
+            const match = matches(w)
+            return (
+              <WorkCellLink
+                key={w._id}
+                work={w}
+                dimmed={!match}
+                // Only a live filter promotes a cell; with nothing selected the
+                // grid stays neutral rather than every cell shouting at once.
+                hit={filtering && match}
+                enterDelay={Math.min(i, 11) * 45}
+                onPreview={() => setPreview(w)}
+                onClearPreview={() => setPreview((p) => (p === w ? null : p))}
+              />
+            )
+          })}
+        </section>
+      </div>
     </div>
   )
 }
@@ -232,8 +237,8 @@ function FilterWord({
       aria-pressed={active}
       className={
         active
-          ? 'inline-block cursor-pointer rounded-md bg-white px-2.5 py-1 text-smalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
-          : 'inline-block cursor-pointer whitespace-nowrap border-b-2 border-white/30 py-1 text-white transition-colors hover:border-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+          ? 'cursor-pointer rounded-md bg-smalt px-2 py-0.5 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-smalt'
+          : 'cursor-pointer rounded-md px-2 py-0.5 text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-smalt hover:text-smalt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-smalt'
       }
     >
       {children}

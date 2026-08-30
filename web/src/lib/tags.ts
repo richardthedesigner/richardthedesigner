@@ -1,12 +1,14 @@
-// The six story tags. Mirrors studio/schema/shared.ts (one source of truth in
+// The five story tags. Mirrors studio/schema/shared.ts (one source of truth in
 // the CMS; this is the presentation copy + ordering for the frontend filter).
+//
+// `value` is also the word the filter row shows, so there is no separate
+// display map left to drift out of step with the schema.
 export const STORY_TAGS = [
   {value: 'operate', title: 'Operate at scale', short: 'Operate'},
+  {value: 'design', title: 'Design', short: 'Design'},
   {value: 'build', title: 'Build AI-native', short: 'Build w/ AI'},
-  {value: 'systems', title: 'Design the system', short: 'Systems'},
   {value: 'transform', title: 'Transform the org', short: 'Transform'},
-  {value: 'craft', title: 'Keep craft visible', short: 'Craft'},
-  {value: 'play', title: 'Play in public', short: 'Play'},
+  {value: 'run', title: 'Run the business', short: 'Run'},
 ] as const
 
 export type StoryTag = (typeof STORY_TAGS)[number]['value']

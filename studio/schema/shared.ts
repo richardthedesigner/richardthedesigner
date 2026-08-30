@@ -1,17 +1,18 @@
 // Shared option lists used across schema types.
 
-// The five story tags. These drive the home-page grid filter AND act as the
+// The five story tags. These drive the home-page filter AND act as the
 // capability taxonomy. One list, one source of truth.
+//
+// The value is the word the page shows, deliberately: the earlier list used
+// `systems` for a control labelled "design" and `play` for one labelled
+// "craft", and tags drifted onto the wrong pieces because the editor and the
+// page were not naming the same thing.
 export const storyTags = [
   {title: 'Operate at scale', value: 'operate'},
+  {title: 'Design', value: 'design'},
   {title: 'Build AI-native', value: 'build'},
-  {title: 'Design the system', value: 'systems'},
   {title: 'Transform the org', value: 'transform'},
-  {title: 'Keep craft visible', value: 'craft'},
-  // Sixth bucket for personal/experimental pieces that don't fit the work
-  // verbs (Swurf, Wall design, the venture concepts). Masthead sentence:
-  // "How I ... / play." Frontend filter activates once pieces are tagged.
-  {title: 'Play in public', value: 'play'},
+  {title: 'Run the business', value: 'run'},
 ]
 
 // Internal workflow state. Not public. Lets the CMS work as a knowledge base
