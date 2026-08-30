@@ -37,7 +37,7 @@ export const FALLBACK_IMAGES: Record<string, FallbackImage> = {
     url: u('photo-1483366774565-c783b9f70e2c'),
     alt: 'Glass facade with a regular structural grid',
   },
-  'prepay-qikserve': {
+  'preoday-qikserve': {
     url: u('photo-1524351543168-8e38787614e9'),
     alt: 'Two converging architectural planes',
   },
@@ -192,7 +192,7 @@ const SLUG_THEMES: Record<string, Theme> = {
   'the-brotique': 'retail',
   strunk: 'print',
   'access-evoguest': 'kiosk',
-  'prepay-qikserve': 'abstract',
+  'preoday-qikserve': 'abstract',
   quoin: 'office',
   'qsr-kiosk-go-live': 'kiosk',
   'access-kiosk-pocket': 'ordering',
