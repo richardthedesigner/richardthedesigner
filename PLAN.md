@@ -48,7 +48,7 @@ The one Richard asked for. Blocked at the last step on a token only he can mint.
       the field, edits appear without reload, and the public site still serves
       clean HTML with no stega in `<title>` or the sitemap
 
-## Phase 2 — Stop the schema drifting
+## Phase 2 — Stop the schema drifting   ✅ DONE
 
 `.github/workflows/schema.yml` on push to main touching `studio/schema/**`:
 `npm ci` → `sanity schemas deploy --workspace default` → `npm run typegen` →
@@ -56,7 +56,7 @@ fail if `web/src/sanity/sanity.types.ts` came back dirty. Needs a repo secret
 `SANITY_AUTH_TOKEN` with deploy permission. Matters for Agent Actions, which
 read the deployed schema.
 
-## Phase 3 — SEO override layer
+## Phase 3 — SEO override layer   ✅ DONE
 
 `studio/schema/objects/seo.ts` (`metaTitle` 60, `metaDescription` 155,
 `ogImage`, `noIndex`), optional on `caseStudy`, `project`, `musing`,
@@ -64,13 +64,19 @@ read the deployed schema.
 emit `robots: {index:false, follow:false}` on `noIndex`. Add to queries,
 regenerate types.
 
-## Phase 4 — Tag parity check (Option A only)
+## Phase 4 — Parity guards (Option A only)   ✅ DONE
 
 A test asserting `studio/schema/shared.ts` and `web/src/lib/tags.ts` hold
 identical `value` arrays in the same order. Ten lines. Option B (tag documents)
 is out of scope unless Richard wants tag landing pages.
 
-## Phase 5 — gridOrder → orderRank
+## Phase 5 — gridOrder → orderRank   ← BLOCKED
+
+Blocked on Richard: `designmynight` still has no position in `gridOrder` and
+falls through the `extra` branch that this phase deletes. It needs an explicit
+place first. The migration also writes to 28 published documents, so it needs
+sign-off before it runs.
+
 
 `@sanity/orderable-document-list`, `orderRankField` on `caseStudy` and
 `project`, orderable lists in the structure. Migrate from the existing

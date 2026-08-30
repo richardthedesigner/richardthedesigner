@@ -40,6 +40,7 @@ export const musing = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    defineField({name: 'seo', type: 'seo'}),
   ],
   orderings: [
     {title: 'Date, newest', name: 'dateDesc', by: [{field: 'publishedAt', direction: 'desc'}]},

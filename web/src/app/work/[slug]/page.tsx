@@ -36,9 +36,16 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
   })
   if (!work) return {}
 
+  // Editor override first, derived value second. An empty seo object changes
+  // nothing, so this is additive.
+  const title = work.seo?.metaTitle || work.title
   const description =
-    work.standfirst ?? work.description ?? `${kindLabel(work._type)} by Richard Murphy.`
-  const ogSource = work.heroMedia?.image ?? work.heroMedia?.poster
+    work.seo?.metaDescription ||
+    work.standfirst ||
+    work.description ||
+    `${kindLabel(work._type)} by Richard Murphy.`
+  const ogSource =
+    work.seo?.ogImage ?? work.heroMedia?.image ?? work.heroMedia?.poster
   const fb = fallbackFor(slug)
   // Fallback OG images get re-cropped to the declared 1200x630 so scrapers
   // that trust the dimensions don't letterbox or stretch them.
@@ -49,10 +56,11 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
       : undefined
 
   return {
-    title: work.title,
+    title,
     description,
+    robots: work.seo?.noIndex ? {index: false, follow: false} : undefined,
     openGraph: {
-      title: work.title ?? undefined,
+      title: title ?? undefined,
       description: description ?? undefined,
       type: 'article',
       images: ogImage ? [{url: ogImage, width: 1200, height: 630}] : undefined,

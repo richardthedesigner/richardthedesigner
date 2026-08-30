@@ -28,12 +28,18 @@ export async function generateMetadata({params}: Params): Promise<Metadata> {
     stega: false,
   })
   if (!musing) return {}
+
+  // Editor override first, derived value second.
+  const title = musing.seo?.metaTitle || musing.title
+  const description = musing.seo?.metaDescription || musing.excerpt || undefined
+
   return {
-    title: musing.title,
-    description: musing.excerpt ?? undefined,
+    title,
+    description,
+    robots: musing.seo?.noIndex ? {index: false, follow: false} : undefined,
     openGraph: {
-      title: musing.title ?? undefined,
-      description: musing.excerpt ?? undefined,
+      title: title ?? undefined,
+      description,
       type: 'article',
     },
     alternates: {canonical: `/musings/${slug}`},

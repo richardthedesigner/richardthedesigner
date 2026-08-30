@@ -32,11 +32,18 @@ type InfoExtras = {
   }[]
 }
 
-export const metadata: Metadata = {
-  title: 'Info',
-  description:
-    'About Richard Murphy — product design and platform strategy. Contact, locations and links.',
-  alternates: {canonical: '/info'},
+// Static export replaced by a resolver so the singleton's seo overrides apply.
+export async function generateMetadata(): Promise<Metadata> {
+  // stega:false — this builds <title>, description and canonical.
+  const {data} = await sanityFetch({query: INFO_QUERY, stega: false})
+  return {
+    title: data?.seo?.metaTitle || 'Info',
+    description:
+      data?.seo?.metaDescription ||
+      'About Richard Murphy — product design and platform strategy. Contact, locations and links.',
+    robots: data?.seo?.noIndex ? {index: false, follow: false} : undefined,
+    alternates: {canonical: '/info'},
+  }
 }
 
 export default async function InfoPage() {

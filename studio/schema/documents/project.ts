@@ -66,6 +66,7 @@ export const project = defineType({
         layout: 'radio',
       },
     }),
+    defineField({name: 'seo', type: 'seo'}),
   ],
   orderings: [
     {title: 'Manual order', name: 'manual', by: [{field: 'order', direction: 'asc'}]},

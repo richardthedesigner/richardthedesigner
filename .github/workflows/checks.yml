@@ -1,0 +1,39 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    env:
+      # Public identifiers, the same ones committed to README and .env.example.
+      # No token here: the build must only ever see published content.
+      NEXT_PUBLIC_SANITY_PROJECT_ID: dbfopugh
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SITE_URL: https://richardthedesigner.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        working-directory: web
+        run: npm ci
+
+      # Guards against the two silent-drift failures that have actually bitten:
+      # the tag lists diverging, and a fallback key that matches no slug.
+      - name: Content parity guards
+        working-directory: web
+        run: npm test
+
+      - name: Build
+        working-directory: web
+        run: npm run build

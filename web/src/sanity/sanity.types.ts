@@ -13,6 +13,25 @@
  */
 
 // Source: schema.json
+export type Seo = {
+  _type: "seo";
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  noIndex?: boolean;
+};
+
 export type ContentBody = Array<{
   children?: Array<{
     marks?: Array<string>;
@@ -137,6 +156,7 @@ export type SiteSettings = {
     url?: string;
     _key: string;
   }>;
+  seo?: Seo;
 };
 
 export type Musing = {
@@ -152,6 +172,7 @@ export type Musing = {
   tags?: Array<string>;
   body?: ContentBody;
   featured?: boolean;
+  seo?: Seo;
 };
 
 export type Slug = {
@@ -181,6 +202,7 @@ export type Project = {
   order?: number;
   publishingStatus?: "drafted" | "framed" | "sketch" | "name-only";
   shape?: "long-read" | "brief" | "prototype";
+  seo?: Seo;
 };
 
 export type CaseStudy = {
@@ -210,6 +232,7 @@ export type CaseStudy = {
   order?: number;
   publishingStatus?: "drafted" | "framed" | "sketch" | "name-only";
   shape?: "long-read" | "brief" | "prototype";
+  seo?: Seo;
 };
 
 export type SanityImageCrop = {
@@ -324,7 +347,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = ContentBody | Metric | MediaItem | AdvisoryRole | ClientVignette | SiteSettings | Musing | Slug | Project | CaseStudy | SanityImageCrop | SanityImageHotspot | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Seo | ContentBody | Metric | MediaItem | AdvisoryRole | ClientVignette | SiteSettings | Musing | Slug | Project | CaseStudy | SanityImageCrop | SanityImageHotspot | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/sanity/queries.ts
 // Variable: HOME_QUERY
@@ -531,12 +554,29 @@ export type WORK_SLUGS_QUERYResult = Array<{
   slug: string;
 }>;
 // Variable: WORK_QUERY
-// Query: *[(_type == "caseStudy" || _type == "project") && slug.current == $slug][0]{    _id,    _type,    title,    "slug": slug.current,    standfirst,    description,    client,    role,    sector,    timeframe,    year,    tags,    shape,    heroMedia{      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    },    metrics[]{      _key,      value,      label,      note    },    body[]{      ...,      _type == "mediaItem" => {        ...,        "videoUrl": coalesce(videoUrl, videoFile.asset->url),        "lqip": image.asset->metadata.lqip      }    },    gallery[]{      _key,      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  }
+// Query: *[(_type == "caseStudy" || _type == "project") && slug.current == $slug][0]{    _id,    _type,    title,    "slug": slug.current,    seo{      metaTitle,      metaDescription,      noIndex,      ogImage    },    standfirst,    description,    client,    role,    sector,    timeframe,    year,    tags,    shape,    heroMedia{      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    },    metrics[]{      _key,      value,      label,      note    },    body[]{      ...,      _type == "mediaItem" => {        ...,        "videoUrl": coalesce(videoUrl, videoFile.asset->url),        "lqip": image.asset->metadata.lqip      }    },    gallery[]{      _key,      kind,      alt,      caption,      image,      poster,      "videoUrl": coalesce(videoUrl, videoFile.asset->url),      "lqip": image.asset->metadata.lqip    }  }
 export type WORK_QUERYResult = {
   _id: string;
   _type: "caseStudy";
   title: string;
   slug: string;
+  seo: {
+    metaTitle: string | null;
+    metaDescription: string | null;
+    noIndex: boolean | null;
+    ogImage: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+  } | null;
   standfirst: string | null;
   description: null;
   client: string | null;
@@ -680,6 +720,23 @@ export type WORK_QUERYResult = {
   _type: "project";
   title: string;
   slug: string;
+  seo: {
+    metaTitle: string | null;
+    metaDescription: string | null;
+    noIndex: boolean | null;
+    ogImage: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+  } | null;
   standfirst: null;
   description: string | null;
   client: string | null;
@@ -830,11 +887,28 @@ export type MUSING_SLUGS_QUERYResult = Array<{
   slug: string;
 }>;
 // Variable: MUSING_QUERY
-// Query: *[_type == "musing" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    publishedAt,    excerpt,    tags,    body[]{      ...,      _type == "mediaItem" => {        ...,        "videoUrl": coalesce(videoUrl, videoFile.asset->url),        "lqip": image.asset->metadata.lqip      }    }  }
+// Query: *[_type == "musing" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    seo{      metaTitle,      metaDescription,      noIndex,      ogImage    },    publishedAt,    excerpt,    tags,    body[]{      ...,      _type == "mediaItem" => {        ...,        "videoUrl": coalesce(videoUrl, videoFile.asset->url),        "lqip": image.asset->metadata.lqip      }    }  }
 export type MUSING_QUERYResult = {
   _id: string;
   title: string;
   slug: string;
+  seo: {
+    metaTitle: string | null;
+    metaDescription: string | null;
+    noIndex: boolean | null;
+    ogImage: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+  } | null;
   publishedAt: string | null;
   excerpt: string | null;
   tags: Array<string> | null;
@@ -900,21 +974,63 @@ export type MUSING_QUERYResult = {
   }> | null;
 } | null;
 // Variable: INFO_QUERY
-// Query: *[_id == "siteSettings"][0]{    title,    intro,    contactEmail,    locations,    social[]{      _key,      label,      url    }  }
+// Query: *[_id == "siteSettings"][0]{    title,    seo{      metaTitle,      metaDescription,      noIndex,      ogImage    },    intro,    contactEmail,    locations,    social[]{      _key,      label,      url    }  }
 export type INFO_QUERYResult = {
   title: string;
+  seo: null;
   intro: null;
   contactEmail: null;
   locations: null;
   social: null;
 } | {
   title: string | null;
+  seo: null;
+  intro: null;
+  contactEmail: null;
+  locations: null;
+  social: null;
+} | {
+  title: string;
+  seo: {
+    metaTitle: string | null;
+    metaDescription: string | null;
+    noIndex: boolean | null;
+    ogImage: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+  } | null;
   intro: null;
   contactEmail: null;
   locations: null;
   social: null;
 } | {
   title: string | null;
+  seo: {
+    metaTitle: string | null;
+    metaDescription: string | null;
+    noIndex: boolean | null;
+    ogImage: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+  } | null;
   intro: string | null;
   contactEmail: string | null;
   locations: Array<string> | null;
@@ -947,11 +1063,11 @@ declare module "@sanity/client" {
     "{\n  \"settings\": *[_id == \"siteSettings\"][0]{\n    title,\n    intro\n  },\n  \"ordered\": *[_id == \"siteSettings\"][0].gridOrder[]->{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    \"summary\": coalesce(standfirst, description),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  },\n  \"extra\": *[\n    (_type == \"caseStudy\" || _type == \"project\")\n    && defined(slug.current)\n    && !(_id in *[_id == \"siteSettings\"][0].gridOrder[]._ref)\n  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    tags,\n    client,\n    year,\n    \"subtitle\": select(\n      _type == \"caseStudy\" => coalesce(sector, client, role),\n      coalesce(client, description)\n    ),\n    \"summary\": coalesce(standfirst, description),\n    heroMedia{\n      kind,\n      alt,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n}": HOME_QUERYResult;
     "{\n  \"ordered\": *[_id == \"siteSettings\"][0].gridOrder[]->{\n    _type,\n    title,\n    \"slug\": slug.current\n  },\n  \"extra\": *[\n    (_type == \"caseStudy\" || _type == \"project\")\n    && defined(slug.current)\n    && !(_id in *[_id == \"siteSettings\"][0].gridOrder[]._ref)\n  ] | order(coalesce(order, 100) asc, coalesce(year, 0) desc){\n    _type,\n    title,\n    \"slug\": slug.current\n  }\n}": WORK_ORDER_QUERYResult;
     "\n  *[(_type == \"caseStudy\" || _type == \"project\") && defined(slug.current)]{\n    \"slug\": slug.current\n  }\n": WORK_SLUGS_QUERYResult;
-    "\n  *[(_type == \"caseStudy\" || _type == \"project\") && slug.current == $slug][0]{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    standfirst,\n    description,\n    client,\n    role,\n    sector,\n    timeframe,\n    year,\n    tags,\n    shape,\n    heroMedia{\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    },\n    metrics[]{\n      _key,\n      value,\n      label,\n      note\n    },\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    },\n    gallery[]{\n      _key,\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n": WORK_QUERYResult;
+    "\n  *[(_type == \"caseStudy\" || _type == \"project\") && slug.current == $slug][0]{\n    _id,\n    _type,\n    title,\n    \"slug\": slug.current,\n    seo{\n      metaTitle,\n      metaDescription,\n      noIndex,\n      ogImage\n    },\n    standfirst,\n    description,\n    client,\n    role,\n    sector,\n    timeframe,\n    year,\n    tags,\n    shape,\n    heroMedia{\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    },\n    metrics[]{\n      _key,\n      value,\n      label,\n      note\n    },\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    },\n    gallery[]{\n      _key,\n      kind,\n      alt,\n      caption,\n      image,\n      poster,\n      \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n      \"lqip\": image.asset->metadata.lqip\n    }\n  }\n": WORK_QUERYResult;
     "\n  *[_type == \"musing\" && defined(slug.current)] | order(publishedAt desc){\n    _id,\n    title,\n    \"slug\": slug.current,\n    excerpt,\n    publishedAt,\n    tags\n  }\n": MUSINGS_INDEX_QUERYResult;
     "\n  *[_type == \"musing\" && defined(slug.current)]{\n    \"slug\": slug.current\n  }\n": MUSING_SLUGS_QUERYResult;
-    "\n  *[_type == \"musing\" && slug.current == $slug][0]{\n    _id,\n    title,\n    \"slug\": slug.current,\n    publishedAt,\n    excerpt,\n    tags,\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    }\n  }\n": MUSING_QUERYResult;
-    "\n  *[_id == \"siteSettings\"][0]{\n    title,\n    intro,\n    contactEmail,\n    locations,\n    social[]{\n      _key,\n      label,\n      url\n    }\n  }\n": INFO_QUERYResult;
+    "\n  *[_type == \"musing\" && slug.current == $slug][0]{\n    _id,\n    title,\n    \"slug\": slug.current,\n    seo{\n      metaTitle,\n      metaDescription,\n      noIndex,\n      ogImage\n    },\n    publishedAt,\n    excerpt,\n    tags,\n    body[]{\n      ...,\n      _type == \"mediaItem\" => {\n        ...,\n        \"videoUrl\": coalesce(videoUrl, videoFile.asset->url),\n        \"lqip\": image.asset->metadata.lqip\n      }\n    }\n  }\n": MUSING_QUERYResult;
+    "\n  *[_id == \"siteSettings\"][0]{\n    title,\n    seo{\n      metaTitle,\n      metaDescription,\n      noIndex,\n      ogImage\n    },\n    intro,\n    contactEmail,\n    locations,\n    social[]{\n      _key,\n      label,\n      url\n    }\n  }\n": INFO_QUERYResult;
     "\n  *[_id == \"siteSettings\"][0]{\n    title,\n    tickerItems,\n    contactEmail\n  }\n": LAYOUT_QUERYResult;
   }
 }

@@ -65,6 +65,14 @@ export const FALLBACK_IMAGES: Record<string, FallbackImage> = {
     url: u('photo-1497366412874-3415097a27e7'),
     alt: 'Workplace interior with strong brand surfaces',
   },
+  kaizen: {
+    url: u('photo-1770816305998-57eec25ac2d5'),
+    alt: 'Minimal geometry suggesting a systematised interface',
+  },
+  'the-second-wall': {
+    url: u('photo-1578770701978-0b6bfec6e492'),
+    alt: 'Street elevation of a stone listed building',
+  },
   causewayside: {
     url: u('photo-1535905471006-9b3b2c82ea94'),
     alt: 'Stone tenement street in Edinburgh',
@@ -199,6 +207,8 @@ const SLUG_THEMES: Record<string, Theme> = {
   'hudson-and-armitage': 'print',
   optify: 'abstract',
   'realise-offices': 'office',
+  kaizen: 'abstract',
+  'the-second-wall': 'edinburgh',
   causewayside: 'edinburgh',
   iamhere: 'abstract',
   flymyairport: 'abstract',

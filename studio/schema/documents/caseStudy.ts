@@ -113,6 +113,7 @@ export const caseStudy = defineType({
       },
       group: 'meta',
     }),
+    defineField({name: 'seo', type: 'seo', group: 'meta'}),
   ],
   orderings: [
     {title: 'Manual order', name: 'manual', by: [{field: 'order', direction: 'asc'}]},

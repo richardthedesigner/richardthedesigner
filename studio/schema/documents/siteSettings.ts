@@ -56,6 +56,7 @@ export const siteSettings = defineType({
         },
       ],
     }),
+    defineField({name: 'seo', type: 'seo'}),
   ],
   preview: {prepare: () => ({title: 'Site settings'})},
 })

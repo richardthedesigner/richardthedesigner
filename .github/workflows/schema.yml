@@ -1,0 +1,57 @@
+name: Schema
+
+# The schema lives in the repo but is *used* from the Content Lake, so the two
+# can drift apart silently. Anything that touches the schema redeploys it and
+# regenerates types in the same run, and the job fails if the generated types
+# come back different from what was committed.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/schema/**'
+      - 'studio/sanity.config.ts'
+      - 'studio/sanity.cli.ts'
+      - '.github/workflows/schema.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-and-typegen:
+    runs-on: ubuntu-latest
+    # Skips silently until the deploy token exists, rather than failing every
+    # push with a red X for a secret that has not been added yet.
+    if: ${{ secrets.SANITY_AUTH_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+
+      - name: Install
+        working-directory: studio
+        run: npm ci
+
+      - name: Deploy schema
+        working-directory: studio
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+        run: npx sanity schema deploy --workspace default
+
+      # typegen writes into ../web, so the diff check below covers the frontend.
+      - name: Regenerate types
+        working-directory: studio
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+        run: npm run typegen
+
+      - name: Fail if generated types are stale
+        run: |
+          if ! git diff --quiet -- web/src/sanity/sanity.types.ts; then
+            echo "::error::web/src/sanity/sanity.types.ts is out of date."
+            echo "Run 'npm run typegen' in studio/ and commit the result."
+            git diff -- web/src/sanity/sanity.types.ts
+            exit 1
+          fi
+          echo "Generated types match the deployed schema."

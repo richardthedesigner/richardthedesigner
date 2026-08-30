@@ -12,6 +12,7 @@ import {advisoryRole} from './documents/advisoryRole'
 import {mediaItem} from './objects/mediaItem'
 import {metric} from './objects/metric'
 import {contentBody} from './objects/contentBody'
+import {seo} from './objects/seo'
 
 export const schemaTypes = [
   // documents
@@ -25,4 +26,5 @@ export const schemaTypes = [
   mediaItem,
   metric,
   contentBody,
+  seo,
 ]

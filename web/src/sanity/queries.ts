@@ -100,6 +100,12 @@ export const WORK_QUERY = defineQuery(`
     _type,
     title,
     "slug": slug.current,
+    seo{
+      metaTitle,
+      metaDescription,
+      noIndex,
+      ogImage
+    },
     standfirst,
     description,
     client,
@@ -170,6 +176,12 @@ export const MUSING_QUERY = defineQuery(`
     _id,
     title,
     "slug": slug.current,
+    seo{
+      metaTitle,
+      metaDescription,
+      noIndex,
+      ogImage
+    },
     publishedAt,
     excerpt,
     tags,
@@ -190,6 +202,12 @@ export const MUSING_QUERY = defineQuery(`
 export const INFO_QUERY = defineQuery(`
   *[_id == "siteSettings"][0]{
     title,
+    seo{
+      metaTitle,
+      metaDescription,
+      noIndex,
+      ogImage
+    },
     intro,
     contactEmail,
     locations,
