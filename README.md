@@ -58,8 +58,14 @@ Open **Presentation** in the Studio to see the site in an iframe, click any text
 to jump to its field, and watch edits apply without a reload.
 
 - The Studio's iframe target is baked in at build time and defaults to
-  production. For local work set `SANITY_STUDIO_PREVIEW_ORIGIN=http://localhost:3000`
-  in `studio/.env` (gitignored) before `npm run dev`.
+  production. For local work pass it **inline**, not via `studio/.env`:
+
+  ```bash
+  SANITY_STUDIO_PREVIEW_ORIGIN=http://localhost:3000 npm run dev
+  ```
+
+  Putting it in `.env` also poisons `npm run deploy`, which reads the same
+  file and would ship a hosted Studio pointing at a dead local port.
 - `web/next.config.ts` allows the Studio origins to frame the site via
   `Content-Security-Policy: frame-ancestors`. Everything else is still refused.
 - In draft mode, strings arrive stega-encoded, carrying an invisible pointer
