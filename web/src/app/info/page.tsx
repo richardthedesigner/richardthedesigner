@@ -1,5 +1,6 @@
 import type {Metadata} from 'next'
 
+import {client} from '@/sanity/client'
 import {sanityFetch} from '@/sanity/live'
 import {INFO_QUERY} from '@/sanity/queries'
 import {ObfuscatedEmail} from '@/components/ObfuscatedEmail'
@@ -34,8 +35,7 @@ type InfoExtras = {
 
 // Static export replaced by a resolver so the singleton's seo overrides apply.
 export async function generateMetadata(): Promise<Metadata> {
-  // stega:false — this builds <title>, description and canonical.
-  const {data} = await sanityFetch({query: INFO_QUERY, stega: false})
+  const data = await client.fetch(INFO_QUERY)
   return {
     title: data?.seo?.metaTitle || 'Info',
     description:

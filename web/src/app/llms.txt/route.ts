@@ -1,4 +1,4 @@
-import {sanityFetch} from '@/sanity/live'
+import {client} from '@/sanity/client'
 import {SITE_URL} from '@/lib/site'
 
 export const revalidate = 3600
@@ -51,9 +51,7 @@ function line(e: Entry, path: string, blurb?: string | null, meta?: string | nul
 // llms.txt — a plain-text map of the site for AI agents and assistants.
 // Generated from the CMS so it never drifts from the published content.
 export async function GET() {
-  // stega:false — this file is read by machines; no invisible characters.
-  const {data} = await sanityFetch({query: LLMS_QUERY, stega: false})
-  const llms = data as LlmsData
+  const llms = await client.fetch<LlmsData>(LLMS_QUERY)
   const s = llms.settings
 
   const md = `# ${s?.title ?? 'Richard Murphy'} — Product Design & Platform Strategy

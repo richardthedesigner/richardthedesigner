@@ -1,6 +1,6 @@
 import type {MetadataRoute} from 'next'
 
-import {sanityFetch} from '@/sanity/live'
+import {client} from '@/sanity/client'
 import {SITE_URL} from '@/lib/site'
 
 export const revalidate = 3600
@@ -16,9 +16,7 @@ type SitemapEntry = {slug: string | null; _updatedAt: string}
 type SitemapData = {work: SitemapEntry[]; musings: SitemapEntry[]}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // stega:false — invisible characters in a sitemap URL are a live SEO bug.
-  const {data} = await sanityFetch({query: SITEMAP_QUERY, stega: false})
-  const sitemapData = data as SitemapData
+  const sitemapData = await client.fetch<SitemapData>(SITEMAP_QUERY)
 
   const latest = [...sitemapData.work, ...sitemapData.musings]
     .map((e) => e._updatedAt)

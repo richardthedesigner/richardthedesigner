@@ -2,6 +2,12 @@ import {createClient} from 'next-sanity'
 
 import {apiVersion, dataset, projectId, studioUrl} from './env'
 
+// Build-time and machine-readable surfaces use the plain client, not
+// sanityFetch: sanityFetch consults draftMode(), which is illegal in
+// generateStaticParams and unwanted anywhere that must always be published.
+// The plain client carries no token, so it is published-only by construction
+// and its strings are never stega-encoded.
+
 // Read-only client. No token is configured here, so on its own it can only ever
 // see *published* content via the CDN. Draft access goes through sanityFetch in
 // ./live.ts, which supplies a viewer token and flips the perspective; that is
