@@ -70,12 +70,33 @@ A test asserting `studio/schema/shared.ts` and `web/src/lib/tags.ts` hold
 identical `value` arrays in the same order. Ten lines. Option B (tag documents)
 is out of scope unless Richard wants tag landing pages.
 
-## Phase 5 — gridOrder → orderRank   ← BLOCKED
+## Phase 5 — gridOrder → orderRank   ← BLOCKED ON A DEPENDENCY GAP
 
-Blocked on Richard: `designmynight` still has no position in `gridOrder` and
-falls through the `extra` branch that this phase deletes. It needs an explicit
-place first. The migration also writes to 28 published documents, so it needs
-sign-off before it runs.
+`@sanity/orderable-document-list` has no release compatible with this Studio.
+v1.2.2, the newest v1, wants `sanity ^3` and `react ^18`; v2.0.23, the newest,
+wants `sanity ^5 || ^6`. This Studio runs sanity 4.22 and react 19.2, so the
+plugin skipped the version it is on. npm refuses the install rather than
+warning.
+
+Three ways forward, for Richard to choose:
+
+1. **Upgrade the Studio to Sanity 6**, then install v2. Correct long-term and
+   unblocks the plugin properly, but it is a major upgrade and its own piece of
+   work, not a step inside this phase.
+2. **Hand-rolled ordering.** A plain `orderRank` string field plus
+   `| order(orderRank)`, ordered through the Studio's own list controls rather
+   than drag-and-drop. Gets the query simplification and kills the dangling
+   `extra` branch; loses the drag UI, which is most of why the plugin exists.
+3. **Force the install** with `--legacy-peer-deps`. Not recommended: npm's own
+   warning is that resolution may be broken, and this is the Studio Richard
+   uses daily.
+
+Not attempted, so nothing is half-migrated. `gridOrder` is untouched and still
+authoritative.
+
+Three documents now sit outside `gridOrder`, not one: `designmynight`, plus
+`kaizen` and `the-second-wall` added on 30 August. All three fall through the
+`extra` branch, so they render, just in an unmanaged position.
 
 
 `@sanity/orderable-document-list`, `orderRankField` on `caseStudy` and
